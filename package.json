@@ -1,6 +1,6 @@
 {
-  "name": "historidoc-app",
-  "productName": "historidoc-app",
+  "name": "historidoc_app",
+  "productName": "historidoc_app",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".webpack/main",

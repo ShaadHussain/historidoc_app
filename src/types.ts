@@ -17,11 +17,18 @@ export interface ElectronAPI {
   getTrackedFiles: () => Promise<string[]>;
   checkFileChanges: (filePath: string) => Promise<{ hasChanges: boolean }>;
   commitVersion: (filePath: string, message: string) => Promise<ApiResult>;
-  renameLastVersion: (filePath: string, newMessage: string) => Promise<ApiResult>;
+  renameLastVersion: (
+    filePath: string,
+    newMessage: string,
+  ) => Promise<ApiResult>;
   getVersions: (filePath: string) => Promise<Version[]>;
   restoreVersion: (filePath: string, commitHash: string) => Promise<ApiResult>;
   removeTrackedFile: (filePath: string) => Promise<ApiResult>;
-  exportVersion: (filePath: string, commitHash: string, versionMessage: string) => Promise<ApiResult>;
+  exportVersion: (
+    filePath: string,
+    commitHash: string,
+    versionMessage: string,
+  ) => Promise<ApiResult>;
   getPreference: (key: string) => Promise<any>;
   setPreference: (key: string, value: any) => Promise<ApiResult>;
 }

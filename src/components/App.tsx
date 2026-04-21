@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import FileList from './FileList';
-import VersionHistory from './VersionHistory';
-import ConfirmDialog from './ConfirmDialog';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import FileList from "./FileList";
+import VersionHistory from "./VersionHistory";
+import ConfirmDialog from "./ConfirmDialog";
+import "./App.css";
 
 const App: React.FC = () => {
   const [trackedFiles, setTrackedFiles] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingFilePath, setPendingFilePath] = useState('');
+  const [pendingFilePath, setPendingFilePath] = useState("");
 
   useEffect(() => {
     loadTrackedFiles();
@@ -72,7 +72,7 @@ const App: React.FC = () => {
     setIsDragging(false);
 
     if (!window.electron) {
-      console.error('window.electron not available');
+      console.error("window.electron not available");
       return;
     }
 
@@ -83,18 +83,21 @@ const App: React.FC = () => {
       const filePath = file.path;
 
       if (!filePath) {
-        console.error('No file path available');
-        alert('Error: Could not get file path. Make sure you are dragging a file from your file system.');
+        console.error("No file path available");
+        alert(
+          "Error: Could not get file path. Make sure you are dragging a file from your file system.",
+        );
         return;
       }
 
       setPendingFilePath(filePath);
 
-      const autoConfirm = await window.electron.getPreference('autoConfirmDrop');
+      const autoConfirm =
+        await window.electron.getPreference("autoConfirmDrop");
 
       if (autoConfirm) {
         await trackFile(filePath);
-        setPendingFilePath('');
+        setPendingFilePath("");
       } else {
         setShowConfirmDialog(true);
       }
@@ -103,16 +106,16 @@ const App: React.FC = () => {
 
   const handleConfirm = async (dontAskAgain: boolean) => {
     if (dontAskAgain) {
-      await window.electron.setPreference('autoConfirmDrop', true);
+      await window.electron.setPreference("autoConfirmDrop", true);
     }
 
     await trackFile(pendingFilePath);
-    setPendingFilePath('');
+    setPendingFilePath("");
     setShowConfirmDialog(false);
   };
 
   const handleCancel = () => {
-    setPendingFilePath('');
+    setPendingFilePath("");
     setShowConfirmDialog(false);
   };
 
@@ -125,12 +128,12 @@ const App: React.FC = () => {
   };
 
   const getFileName = (path: string): string => {
-    return path.split('/').pop() || path.split('\\').pop() || path;
+    return path.split("/").pop() || path.split("\\").pop() || path;
   };
 
   return (
     <div
-      className={`app ${isDragging ? 'dragging' : ''}`}
+      className={`app ${isDragging ? "dragging" : ""}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -148,7 +151,10 @@ const App: React.FC = () => {
           selectedFile={selectedFile}
           onSelectFile={handleSelectFile}
         />
-        <VersionHistory selectedFile={selectedFile} onRemoveFile={handleRemoveFile} />
+        <VersionHistory
+          selectedFile={selectedFile}
+          onRemoveFile={handleRemoveFile}
+        />
       </div>
 
       {isDragging && (
