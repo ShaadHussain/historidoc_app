@@ -1,0 +1,33 @@
+export interface Version {
+  hash: string;
+  message: string;
+  date: string;
+  author: string;
+}
+
+export interface ApiResult {
+  success: boolean;
+  error?: string;
+  path?: string;
+}
+
+export interface ElectronAPI {
+  selectFile: () => Promise<string | null>;
+  trackFile: (filePath: string) => Promise<ApiResult>;
+  getTrackedFiles: () => Promise<string[]>;
+  checkFileChanges: (filePath: string) => Promise<{ hasChanges: boolean }>;
+  commitVersion: (filePath: string, message: string) => Promise<ApiResult>;
+  renameLastVersion: (filePath: string, newMessage: string) => Promise<ApiResult>;
+  getVersions: (filePath: string) => Promise<Version[]>;
+  restoreVersion: (filePath: string, commitHash: string) => Promise<ApiResult>;
+  removeTrackedFile: (filePath: string) => Promise<ApiResult>;
+  exportVersion: (filePath: string, commitHash: string, versionMessage: string) => Promise<ApiResult>;
+  getPreference: (key: string) => Promise<any>;
+  setPreference: (key: string, value: any) => Promise<ApiResult>;
+}
+
+declare global {
+  interface Window {
+    electron: ElectronAPI;
+  }
+}
