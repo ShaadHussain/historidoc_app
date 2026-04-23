@@ -4,7 +4,7 @@ import VersionHistory from "./VersionHistory";
 import ConfirmDialog from "./ConfirmDialog";
 import "./App.css";
 
-const App: React.FC = () => {
+const App = () => {
   const [trackedFiles, setTrackedFiles] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);

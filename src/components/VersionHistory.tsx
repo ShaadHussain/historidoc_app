@@ -7,7 +7,7 @@ interface VersionHistoryProps {
   onRemoveFile?: (filePath: string) => void;
 }
 
-const VersionHistory: React.FC<VersionHistoryProps> = ({ selectedFile, onRemoveFile }) => {
+const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [commitMessage, setCommitMessage] = useState('');
   const [loading, setLoading] = useState(false);

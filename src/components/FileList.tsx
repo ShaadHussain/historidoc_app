@@ -7,7 +7,7 @@ interface FileListProps {
   onSelectFile: (filePath: string) => void;
 }
 
-const FileList: React.FC<FileListProps> = ({ trackedFiles, selectedFile, onSelectFile }) => {
+const FileList = ({ trackedFiles, selectedFile, onSelectFile }: FileListProps) => {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
 
   const getFileName = (filePath: string): string => {
