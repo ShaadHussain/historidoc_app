@@ -62,6 +62,10 @@ const getAppDataPath = (): string => {
   return path.join(app.getPath('userData'), 'tracked-files');
 };
 
+const getTrackedFilesPath = (): string => {
+  return path.join(getAppDataPath(), 'tracked.json');
+};
+
 const ensureDir = async (dirPath: string): Promise<void> => {
   try {
     await fs.access(dirPath);
@@ -109,7 +113,7 @@ ipcMain.handle('track-file', async (event, filePath: string) => {
   try {
     await initRepo(filePath);
 
-    const trackedFilesPath = path.join(getAppDataPath(), 'tracked.json');
+    const trackedFilesPath = getTrackedFilesPath();
     await ensureDir(getAppDataPath());
 
     let trackedFiles: string[] = [];
@@ -133,7 +137,7 @@ ipcMain.handle('track-file', async (event, filePath: string) => {
 
 ipcMain.handle('get-tracked-files', async () => {
   try {
-    const trackedFilesPath = path.join(getAppDataPath(), 'tracked.json');
+    const trackedFilesPath = getTrackedFilesPath();
     const data = await fs.readFile(trackedFilesPath, 'utf-8');
     return JSON.parse(data);
   } catch {
@@ -243,7 +247,7 @@ ipcMain.handle('restore-version', async (event, filePath: string, commitHash: st
 
 ipcMain.handle('remove-tracked-file', async (event, filePath: string) => {
   try {
-    const trackedFilesPath = path.join(getAppDataPath(), 'tracked.json');
+    const trackedFilesPath = getTrackedFilesPath();
     const data = await fs.readFile(trackedFilesPath, 'utf-8');
     let trackedFiles: string[] = JSON.parse(data);
 

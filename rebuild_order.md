@@ -94,45 +94,42 @@ app.on('activate', () => { ... });
 #### Step 2: Helper Functions (Build These First)
 Write utility functions before IPC handlers that use them:
 
-1. **`getTrackedFilesPath()`** - Returns path to tracked.json
-2. **`getPreferencesPath()`** - Returns path to preferences.json
-3. **`loadTrackedFiles()`** - Reads tracked.json
-4. **`saveTrackedFiles()`** - Writes to tracked.json
-5. **`loadPreferences()`** - Reads preferences.json
-6. **`savePreferences()`** - Writes to preferences.json
-7. **`getFileRepoPath(filePath)`** - Converts file path to repo directory path
-8. **`ensureDirectoryExists(dirPath)`** - Creates directory if needed
+1. **`getAppDataPath()`** - Returns path to the `tracked-files` directory in userData
+2. **`getTrackedFilesPath()`** - Returns path to `tracked.json` (calls `getAppDataPath()`)
+3. **`getRepoPath(filePath)`** - Converts a file path to a unique hashed repo directory path
+4. **`ensureDir(dirPath)`** - Creates directory if it doesn't exist
+5. **`initRepo(filePath)`** - Initializes a git repo for a file (calls `getRepoPath()`, `ensureDir()`)
 
 #### Step 3: IPC Handlers (Build in This Order)
 
 **Group 1: File Management (Core Functionality)**
 1. **`select-file`** - File picker dialog (simplest, no Git)
 2. **`track-file`** - Initialize Git repo for a file
-   - Uses: `getFileRepoPath()`, `ensureDirectoryExists()`, `loadTrackedFiles()`, `saveTrackedFiles()`
+   - Uses: `initRepo()`, `getTrackedFilesPath()`, `ensureDir()`, fs read/write
 3. **`get-tracked-files`** - Return list of tracked files
-   - Uses: `loadTrackedFiles()`
+   - Uses: `getTrackedFilesPath()`, fs read
 4. **`remove-tracked-file`** - Remove file from tracking
-   - Uses: `loadTrackedFiles()`, `saveTrackedFiles()`
+   - Uses: `getTrackedFilesPath()`, fs read/write
 
 **Group 2: Version Control (Git Operations)**
 5. **`check-file-changes`** - Check if file has changes
-   - Uses: `getFileRepoPath()`, simple-git
+   - Uses: `getRepoPath()`, simple-git
 6. **`commit-version`** - Save new version
-   - Uses: `getFileRepoPath()`, simple-git
+   - Uses: `getRepoPath()`, simple-git
 7. **`get-versions`** - Fetch version history
-   - Uses: `getFileRepoPath()`, simple-git
+   - Uses: `getRepoPath()`, simple-git
 8. **`restore-version`** - Restore to previous version
-   - Uses: `getFileRepoPath()`, simple-git
+   - Uses: `getRepoPath()`, simple-git
 9. **`rename-last-version`** - Rename last commit
-   - Uses: `getFileRepoPath()`, simple-git
+   - Uses: `getRepoPath()`, simple-git
 10. **`export-version`** - Export version to file
-    - Uses: `getFileRepoPath()`, simple-git, dialog
+    - Uses: `getRepoPath()`, simple-git, dialog
 
 **Group 3: Preferences (Simple Storage)**
 11. **`get-preference`** - Get preference value
-    - Uses: `loadPreferences()`
+    - Uses: `getAppDataPath()`, `ensureDir()`, fs read
 12. **`set-preference`** - Set preference value
-    - Uses: `loadPreferences()`, `savePreferences()`
+    - Uses: `getAppDataPath()`, `ensureDir()`, fs read/write
 
 **Why this order?**
 - Build from simple to complex
