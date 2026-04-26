@@ -155,26 +155,25 @@ event: This object contains information about the sender (like which window sent
 */
 
 ipcMain.handle("check-file-changes", async (event, filePath: string) => {
-  try {
-    const repoPath = getRepoPath(filePath);
-    const targetFilePath = path.join(repoPath, path.basename(filePath));
+  const repoPath = getRepoPath(filePath);
+  const targetFilePath = path.join(repoPath, path.basename(filePath));
 
-    // Copy the current file to the repo to check for changes
-    await fs.copyFile(filePath, targetFilePath);
+  await fs.copyFile(filePath, targetFilePath);
 
-    const git = simpleGit(repoPath);
+  const git = simpleGit(repoPath);
 
-    const status = await git.status();
-    const hasChanges =
-      status.modified.length > 0 ||
-      status.created.length > 0 ||
-      status.not_added.length > 0;
-
-    return { hasChanges };
-  } catch (error) {
-    // If there's an error (like no commits yet), assume there are changes
+  const hasAnyCommits = await git.raw(["rev-parse", "HEAD"]).then(() => true).catch(() => false);
+  if (!hasAnyCommits) {
     return { hasChanges: true };
   }
+
+  const status = await git.status();
+  const hasChanges =
+    status.modified.length > 0 ||
+    status.created.length > 0 ||
+    status.not_added.length > 0;
+
+  return { hasChanges };
 });
 
 ipcMain.handle(
