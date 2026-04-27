@@ -29,6 +29,7 @@ export interface ElectronAPI {
     commitHash: string,
     versionMessage: string,
   ) => Promise<ApiResult>;
+  getDiff: (filePath: string, commitHash: string) => Promise<{ success: boolean; diff: string; error?: string }>;
   getPreference: (key: string) => Promise<any>;
   setPreference: (key: string, value: any) => Promise<ApiResult>;
 }

@@ -315,6 +315,19 @@ ipcMain.handle(
   },
 );
 
+ipcMain.handle("get-diff", async (event, filePath: string, commitHash: string) => {
+  try {
+    const repoPath = getRepoPath(filePath);
+    const git = simpleGit(repoPath);
+    const fileName = path.basename(filePath);
+
+    const diff = await git.raw(["diff-tree", "--no-commit-id", "-p", commitHash, "--", fileName]);
+    return { success: true, diff };
+  } catch (error) {
+    return { success: false, error: (error as Error).message, diff: "" };
+  }
+});
+
 ipcMain.handle("get-preference", async (event, key: string) => {
   try {
     const preferencesPath = path.join(getAppDataPath(), "preferences.json");
