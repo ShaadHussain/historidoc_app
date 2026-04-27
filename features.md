@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_102
+Diff viewer — show what changed in each version
+- Each version card gets a Diff button
+- Opens a modal showing added (green) and removed (red) lines
+- Uses git diff-tree under the hood, works for all commits including the first
+
 ## FEAT_101
 Handle no-commits case explicitly in check-file-changes
 - Replace broad try/catch with an explicit `rev-parse HEAD` check

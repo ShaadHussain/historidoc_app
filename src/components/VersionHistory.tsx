@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Version } from '../types';
+import DiffViewer from './DiffViewer';
 import './VersionHistory.css';
 
 interface VersionHistoryProps {
@@ -15,6 +16,9 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameMessage, setRenameMessage] = useState('');
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [diffVersion, setDiffVersion] = useState<Version | null>(null);
+  const [diffContent, setDiffContent] = useState('');
+  const [diffLoading, setDiffLoading] = useState(false);
 
   useEffect(() => {
     if (selectedFile) {
@@ -142,6 +146,21 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
     setShowDeleteConfirm(false);
   };
 
+  const handleViewDiff = async (version: Version) => {
+    if (!window.electron || !selectedFile) return;
+    setDiffVersion(version);
+    setDiffLoading(true);
+    setDiffContent('');
+    const result = await window.electron.getDiff(selectedFile, version.hash);
+    setDiffContent(result.success ? result.diff : '');
+    setDiffLoading(false);
+  };
+
+  const handleCloseDiff = () => {
+    setDiffVersion(null);
+    setDiffContent('');
+  };
+
   const handleCopyHash = (hash: string) => {
     navigator.clipboard.writeText(hash);
     setCopiedHash(hash);
@@ -202,6 +221,14 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
                   <div className="version-number">{version.message}</div>
                   <div className="version-actions">
                     <button
+                      className="diff-btn"
+                      onClick={() => handleViewDiff(version)}
+                      disabled={loading}
+                      title="View changes in this version"
+                    >
+                      Diff
+                    </button>
+                    <button
                       className="export-btn"
                       onClick={() => handleExport(version.hash, version.message)}
                       disabled={loading}
@@ -257,6 +284,15 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
             </div>
           </div>
         </div>
+      )}
+
+      {diffVersion && (
+        <DiffViewer
+          versionMessage={diffVersion.message}
+          diff={diffContent}
+          loading={diffLoading}
+          onClose={handleCloseDiff}
+        />
       )}
 
       {showRenameDialog && (

@@ -170,6 +170,7 @@
   align-items: center;
 }
 
+.diff-btn,
 .export-btn,
 .restore-btn {
   padding: 0.5rem 1rem;
@@ -201,6 +202,16 @@
   transform: translateY(-1px);
 }
 
+.diff-btn {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+}
+
+.diff-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  transform: translateY(-1px);
+}
+
+.diff-btn:disabled,
 .export-btn:disabled,
 .restore-btn:disabled {
   opacity: 0.5;
