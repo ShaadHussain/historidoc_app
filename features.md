@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_103
+Unify copy button style and fix border clipping on hover
+- Replace scale transform with box-shadow glow to fix left border being clipped
+- Add checkmark SVG feedback (500ms) to file path copy button
+- Replace clipboard emoji in version hash copy button with same styled SVG button
+
 ## FEAT_102
 Diff viewer — show what changed in each version
 - Each version card gets a Diff button
