@@ -298,6 +298,7 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
       {diffVersion && (
         <DiffViewer
           versionMessage={diffVersion.message}
+          fileName={getFileName(selectedFile)}
           diff={diffContent}
           loading={diffLoading}
           onClose={handleCloseDiff}

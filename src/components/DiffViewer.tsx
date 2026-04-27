@@ -3,6 +3,7 @@ import './DiffViewer.css';
 
 interface DiffViewerProps {
   versionMessage: string;
+  fileName: string;
   diff: string;
   loading: boolean;
   onClose: () => void;
@@ -54,7 +55,7 @@ const parseDiff = (diff: string): ParsedHunk[] => {
   return hunks;
 };
 
-const DiffViewer = ({ versionMessage, diff, loading, onClose }: DiffViewerProps) => {
+const DiffViewer = ({ versionMessage, fileName, diff, loading, onClose }: DiffViewerProps) => {
   const renderContent = () => {
     if (loading) return <div className="diff-empty">Loading diff...</div>;
     if (!diff.trim()) return <div className="diff-empty">No changes in this version.</div>;
@@ -107,7 +108,10 @@ const DiffViewer = ({ versionMessage, diff, loading, onClose }: DiffViewerProps)
     <div className="diff-overlay" onClick={onClose}>
       <div className="diff-modal" onClick={(e) => e.stopPropagation()}>
         <div className="diff-header">
-          <h3>Changes in {versionMessage}</h3>
+          <div className="diff-header-text">
+            <h3>Changes in {versionMessage}</h3>
+            <span className="diff-filename">{fileName}</span>
+          </div>
           <button className="diff-close-btn" onClick={onClose}>✕</button>
         </div>
         <div className="diff-content">
