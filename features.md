@@ -1,5 +1,9 @@
 # Features
 
+## FEAT_104
+Info tooltip next to Add File button explaining folder tracking
+- Hovering the ℹ icon shows: "Folders can be tracked too — ideal for whole-project snapshots. For line-by-line change history, track individual files instead."
+
 ## FEAT_103
 Unify copy button style and fix border clipping on hover
 - Replace scale transform with box-shadow glow to fix left border being clipped
