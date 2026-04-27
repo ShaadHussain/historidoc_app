@@ -18,16 +18,31 @@ const DiffViewer = ({ versionMessage, diff, loading, onClose }: DiffViewerProps)
       return <div className="diff-empty">No changes in this version.</div>;
     }
 
-    return diff.split('\n').map((line, i) => {
+    const isMetaLine = (line: string) =>
+      line.startsWith('diff ') ||
+      line.startsWith('index ') ||
+      line.startsWith('--- ') ||
+      line.startsWith('+++ ') ||
+      line.startsWith('@@') ||
+      line.startsWith('\\ No newline');
+
+    return diff.split('\n').filter(line => !isMetaLine(line)).map((line, i) => {
       let className = 'diff-line';
-      if (line.startsWith('+') && !line.startsWith('+++')) className += ' diff-added';
-      else if (line.startsWith('-') && !line.startsWith('---')) className += ' diff-removed';
-      else if (line.startsWith('@@')) className += ' diff-hunk';
-      else if (line.startsWith('diff ') || line.startsWith('index ') || line.startsWith('---') || line.startsWith('+++')) className += ' diff-meta';
+      let text = line;
+
+      if (line.startsWith('+')) {
+        className += ' diff-added';
+        text = line.slice(1);
+      } else if (line.startsWith('-')) {
+        className += ' diff-removed';
+        text = line.slice(1);
+      } else if (line.startsWith(' ')) {
+        text = line.slice(1);
+      }
 
       return (
         <div key={i} className={className}>
-          {line || ' '}
+          {text || ' '}
         </div>
       );
     });
