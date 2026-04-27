@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Info } from "lucide-react";
 import FileList from "./FileList";
 import VersionHistory from "./VersionHistory";
 import ConfirmDialog from "./ConfirmDialog";
@@ -142,11 +143,7 @@ const App = () => {
         <h1>Version Tracker</h1>
         <div className="header-actions">
           <div className="info-tooltip-wrapper">
-            <svg className="info-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
+            <Info className="info-icon" size={18} />
             <div className="info-tooltip">
               Folders can be tracked too — ideal for whole-project snapshots. For line-by-line change history, track individual files instead.
             </div>
