@@ -8,50 +8,96 @@ interface DiffViewerProps {
   onClose: () => void;
 }
 
-const isMetaLine = (line: string) =>
-  line.startsWith('diff ') ||
-  line.startsWith('index ') ||
-  line.startsWith('--- ') ||
-  line.startsWith('+++ ') ||
-  line.startsWith('@@') ||
-  line.startsWith('\\ No newline');
+interface ParsedLine {
+  type: 'context' | 'added' | 'removed';
+  text: string;
+  oldLineNum: number;
+  newLineNum: number;
+}
+
+interface ParsedHunk {
+  lines: ParsedLine[];
+}
+
+const parseDiff = (diff: string): ParsedHunk[] => {
+  const hunks: ParsedHunk[] = [];
+  let currentHunk: ParsedHunk | null = null;
+  let oldLineNum = 0;
+  let newLineNum = 0;
+
+  for (const line of diff.split('\n')) {
+    const hunkMatch = line.match(/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+    if (hunkMatch) {
+      currentHunk = { lines: [] };
+      hunks.push(currentHunk);
+      oldLineNum = parseInt(hunkMatch[1]);
+      newLineNum = parseInt(hunkMatch[2]);
+      continue;
+    }
+
+    if (!currentHunk) continue;
+    if (
+      line.startsWith('diff ') || line.startsWith('index ') ||
+      line.startsWith('--- ') || line.startsWith('+++ ') ||
+      line.startsWith('\\ No newline')
+    ) continue;
+
+    if (line.startsWith('+')) {
+      currentHunk.lines.push({ type: 'added', text: line.slice(1), oldLineNum: 0, newLineNum: newLineNum++ });
+    } else if (line.startsWith('-')) {
+      currentHunk.lines.push({ type: 'removed', text: line.slice(1), oldLineNum: oldLineNum++, newLineNum: 0 });
+    } else if (line.startsWith(' ')) {
+      currentHunk.lines.push({ type: 'context', text: line.slice(1), oldLineNum: oldLineNum++, newLineNum: newLineNum++ });
+    }
+  }
+
+  return hunks;
+};
 
 const DiffViewer = ({ versionMessage, diff, loading, onClose }: DiffViewerProps) => {
   const renderContent = () => {
-    if (loading) {
-      return <div className="diff-empty">Loading diff...</div>;
-    }
+    if (loading) return <div className="diff-empty">Loading diff...</div>;
+    if (!diff.trim()) return <div className="diff-empty">No changes in this version.</div>;
 
-    if (!diff.trim()) {
-      return <div className="diff-empty">No changes in this version.</div>;
-    }
+    const hunks = parseDiff(diff);
 
-    const lines = diff.split('\n').filter(line => !isMetaLine(line));
-    const addedLines = lines.filter(l => l.startsWith('+')).map(l => l.slice(1));
-    const removedLines = lines.filter(l => l.startsWith('-')).map(l => l.slice(1));
+    const renderSection = (type: 'added' | 'removed') => {
+      const prefix = type === 'added' ? '+' : '-';
+      const relevantHunks = hunks.filter(h => h.lines.some(l => l.type === type));
 
-    const renderSection = (sectionLines: string[], type: 'added' | 'removed') => {
-      if (sectionLines.length === 0) {
+      if (relevantHunks.length === 0) {
         return <div className="diff-section-empty">None</div>;
       }
-      return sectionLines.map((text, i) => (
-        <div key={i} className={`diff-line diff-${type}`}>
-          <span className="diff-line-number">{i + 1}</span>
-          <span className="diff-line-prefix">{type === 'added' ? '+' : '-'}</span>
-          <span className="diff-line-text">{text || ' '}</span>
-        </div>
-      ));
+
+      return relevantHunks.map((hunk, hunkIdx) => {
+        const visibleLines = hunk.lines.filter(l => l.type === 'context' || l.type === type);
+        return (
+          <div key={hunkIdx} className="diff-hunk-group">
+            {hunkIdx > 0 && <div className="diff-hunk-separator" />}
+            {visibleLines.map((line, i) => {
+              const lineNum = type === 'added' ? line.newLineNum : line.oldLineNum;
+              return (
+                <div key={i} className={`diff-line ${line.type === type ? `diff-${type}` : 'diff-context'}`}>
+                  <span className="diff-line-number">{lineNum}</span>
+                  <span className="diff-line-prefix">{line.type === type ? prefix : ' '}</span>
+                  <span className="diff-line-text">{line.text || ' '}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      });
     };
 
     return (
       <>
         <div className="diff-section">
           <div className="diff-section-label diff-section-label-added">Added</div>
-          {renderSection(addedLines, 'added')}
+          {renderSection('added')}
         </div>
         <div className="diff-section">
           <div className="diff-section-label diff-section-label-removed">Deleted</div>
-          {renderSection(removedLines, 'removed')}
+          {renderSection('removed')}
         </div>
       </>
     );
