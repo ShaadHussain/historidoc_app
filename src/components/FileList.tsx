@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import './FileList.css';
 
 interface FileListProps {
@@ -87,15 +87,7 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile }: FileListProps) =
                       onClick={(e) => togglePathExpansion(filePath, e)}
                       title={isExpanded ? 'Minimize path' : 'Expand path'}
                     >
-                      {isExpanded ? (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="18 15 12 9 6 15"></polyline>
-                        </svg>
-                      ) : (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                      )}
+                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
                   </div>
                 </div>
