@@ -8,8 +8,16 @@ interface DiffViewerProps {
   onClose: () => void;
 }
 
+const isMetaLine = (line: string) =>
+  line.startsWith('diff ') ||
+  line.startsWith('index ') ||
+  line.startsWith('--- ') ||
+  line.startsWith('+++ ') ||
+  line.startsWith('@@') ||
+  line.startsWith('\\ No newline');
+
 const DiffViewer = ({ versionMessage, diff, loading, onClose }: DiffViewerProps) => {
-  const renderLines = () => {
+  const renderContent = () => {
     if (loading) {
       return <div className="diff-empty">Loading diff...</div>;
     }
@@ -18,34 +26,35 @@ const DiffViewer = ({ versionMessage, diff, loading, onClose }: DiffViewerProps)
       return <div className="diff-empty">No changes in this version.</div>;
     }
 
-    const isMetaLine = (line: string) =>
-      line.startsWith('diff ') ||
-      line.startsWith('index ') ||
-      line.startsWith('--- ') ||
-      line.startsWith('+++ ') ||
-      line.startsWith('@@') ||
-      line.startsWith('\\ No newline');
+    const lines = diff.split('\n').filter(line => !isMetaLine(line));
+    const addedLines = lines.filter(l => l.startsWith('+')).map(l => l.slice(1));
+    const removedLines = lines.filter(l => l.startsWith('-')).map(l => l.slice(1));
 
-    return diff.split('\n').filter(line => !isMetaLine(line)).map((line, i) => {
-      let className = 'diff-line';
-      let text = line;
-
-      if (line.startsWith('+')) {
-        className += ' diff-added';
-        text = line.slice(1);
-      } else if (line.startsWith('-')) {
-        className += ' diff-removed';
-        text = line.slice(1);
-      } else if (line.startsWith(' ')) {
-        text = line.slice(1);
+    const renderSection = (sectionLines: string[], type: 'added' | 'removed') => {
+      if (sectionLines.length === 0) {
+        return <div className="diff-section-empty">None</div>;
       }
-
-      return (
-        <div key={i} className={className}>
-          {text || ' '}
+      return sectionLines.map((text, i) => (
+        <div key={i} className={`diff-line diff-${type}`}>
+          <span className="diff-line-number">{i + 1}</span>
+          <span className="diff-line-prefix">{type === 'added' ? '+' : '-'}</span>
+          <span className="diff-line-text">{text || ' '}</span>
         </div>
-      );
-    });
+      ));
+    };
+
+    return (
+      <>
+        <div className="diff-section">
+          <div className="diff-section-label diff-section-label-added">Added</div>
+          {renderSection(addedLines, 'added')}
+        </div>
+        <div className="diff-section">
+          <div className="diff-section-label diff-section-label-removed">Deleted</div>
+          {renderSection(removedLines, 'removed')}
+        </div>
+      </>
+    );
   };
 
   return (
@@ -56,7 +65,7 @@ const DiffViewer = ({ versionMessage, diff, loading, onClose }: DiffViewerProps)
           <button className="diff-close-btn" onClick={onClose}>✕</button>
         </div>
         <div className="diff-content">
-          {renderLines()}
+          {renderContent()}
         </div>
       </div>
     </div>
