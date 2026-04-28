@@ -87,6 +87,43 @@
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
 }
 
+.file-tab.missing {
+  border-color: rgba(251, 146, 60, 0.4);
+  opacity: 0.8;
+}
+
+.file-tab.missing:hover {
+  border-color: rgba(251, 146, 60, 0.7);
+}
+
+.file-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.missing-icon {
+  color: #fb923c;
+  flex-shrink: 0;
+}
+
+.relink-btn {
+  background: none;
+  border: 1px solid rgba(251, 146, 60, 0.5);
+  color: #fb923c;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.relink-btn:hover {
+  background: rgba(251, 146, 60, 0.1);
+  border-color: #fb923c;
+}
+
 .file-info {
   flex: 1;
   overflow: hidden;
