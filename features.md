@@ -1,5 +1,14 @@
 # Features
 
+## FEAT_106
+File move detection and re-linking
+- chokidar watches all tracked files; fires immediately when a file disappears
+- Missing files shown in the file list with orange border, warning icon, and Re-link button
+- RelinkDialog shows: corruption warning, last saved version preview, file picker
+- Re-link: renames repo directory to new path hash, updates tracked.json
+- Start Fresh: orphans old history, starts a clean repo for the new path
+- Don't ask again checkbox suppresses auto-dialog for future missing files
+
 ## FEAT_105
 File settings page with Danger Zone
 - Gear icon in version history header opens a settings view

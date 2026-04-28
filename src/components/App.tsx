@@ -3,6 +3,7 @@ import { Info } from "lucide-react";
 import FileList from "./FileList";
 import VersionHistory from "./VersionHistory";
 import ConfirmDialog from "./ConfirmDialog";
+import RelinkDialog from "./RelinkDialog";
 import "./App.css";
 
 const App = () => {
@@ -230,6 +231,16 @@ const App = () => {
             <div className="drop-text">Drop file to track</div>
           </div>
         </div>
+      )}
+
+      {relinkTargetPath && (
+        <RelinkDialog
+          missingFilePath={relinkTargetPath}
+          onRelink={handleRelink}
+          onStartFresh={handleStartFresh}
+          onDismiss={() => setRelinkTargetPath(null)}
+          onSuppressMovePrompt={handleSuppressMovePrompt}
+        />
       )}
 
       <ConfirmDialog
