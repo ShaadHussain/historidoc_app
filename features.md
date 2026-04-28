@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_105
+File settings page with Danger Zone
+- Gear icon in version history header opens a settings view
+- Untrack: stops tracking but preserves version history (can re-add later)
+- Delete All: permanently removes file and all version history
+
 ## FEAT_104
 Info tooltip next to Add File button explaining folder tracking
 - Hovering the ℹ icon shows: "Folders can be tracked too — ideal for whole-project snapshots. For line-by-line change history, track individual files instead."
