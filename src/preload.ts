@@ -30,6 +30,12 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("file-missing", (_, filePath) => callback(filePath)),
   checkMissingFiles: (filePaths: string[]) =>
     ipcRenderer.invoke("check-missing-files", filePaths),
+  relinkFile: (oldPath: string, newPath: string) =>
+    ipcRenderer.invoke("relink-file", oldPath, newPath),
+  startFresh: (oldPath: string, newPath: string) =>
+    ipcRenderer.invoke("start-fresh", oldPath, newPath),
+  getLastVersionContent: (filePath: string) =>
+    ipcRenderer.invoke("get-last-version-content", filePath),
   getPreference: (key: string) => ipcRenderer.invoke("get-preference", key),
   setPreference: (key: string, value: any) =>
     ipcRenderer.invoke("set-preference", key, value),

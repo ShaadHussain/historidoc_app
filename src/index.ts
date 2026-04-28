@@ -376,6 +376,70 @@ ipcMain.handle(
   },
 );
 
+ipcMain.handle(
+  "relink-file",
+  async (event, oldPath: string, newPath: string) => {
+    try {
+      const oldRepoPath = getRepoPath(oldPath);
+      const newRepoPath = getRepoPath(newPath);
+      await fs.rename(oldRepoPath, newRepoPath);
+
+      const trackedFiles = await loadTrackedFiles();
+      const updated = trackedFiles.map((f) => (f === oldPath ? newPath : f));
+      await fs.writeFile(
+        getTrackedFilesPath(),
+        JSON.stringify(updated, null, 2),
+      );
+
+      watcher?.unwatch(oldPath);
+      watcher?.add(newPath);
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  },
+);
+
+ipcMain.handle(
+  "start-fresh",
+  async (event, oldPath: string, newPath: string) => {
+    try {
+      const trackedFiles = await loadTrackedFiles();
+      const updated = trackedFiles.filter((f) => f !== oldPath);
+      if (!updated.includes(newPath)) updated.push(newPath);
+      await fs.writeFile(
+        getTrackedFilesPath(),
+        JSON.stringify(updated, null, 2),
+      );
+
+      await initRepo(newPath);
+
+      watcher?.unwatch(oldPath);
+      watcher?.add(newPath);
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  },
+);
+
+ipcMain.handle(
+  "get-last-version-content",
+  async (event, filePath: string) => {
+    try {
+      const repoPath = getRepoPath(filePath);
+      const git = simpleGit(repoPath);
+      const fileName = path.basename(filePath);
+      const content = await git.show([`HEAD:${fileName}`]);
+      return { success: true, content };
+    } catch {
+      return { success: false, content: "" };
+    }
+  },
+);
+
 ipcMain.handle("check-missing-files", async (event, filePaths: string[]) => {
   const missing: string[] = [];
   for (const filePath of filePaths) {

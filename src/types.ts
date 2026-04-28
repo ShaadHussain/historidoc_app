@@ -33,6 +33,9 @@ export interface ElectronAPI {
   getDiff: (filePath: string, commitHash: string) => Promise<{ success: boolean; diff: string; error?: string }>;
   onFileMissing: (callback: (filePath: string) => void) => void;
   checkMissingFiles: (filePaths: string[]) => Promise<string[]>;
+  relinkFile: (oldPath: string, newPath: string) => Promise<ApiResult>;
+  startFresh: (oldPath: string, newPath: string) => Promise<ApiResult>;
+  getLastVersionContent: (filePath: string) => Promise<{ success: boolean; content: string }>;
   getPreference: (key: string) => Promise<any>;
   setPreference: (key: string, value: any) => Promise<ApiResult>;
 }
