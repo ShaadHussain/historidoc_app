@@ -15,7 +15,7 @@ export interface ElectronAPI {
   selectFile: () => Promise<string | null>;
   trackFile: (filePath: string) => Promise<ApiResult>;
   getTrackedFiles: () => Promise<string[]>;
-  checkFileChanges: (filePath: string) => Promise<{ hasChanges: boolean }>;
+  checkFileChanges: (filePath: string) => Promise<{ hasChanges: boolean; fileMissing?: boolean }>;
   commitVersion: (filePath: string, message: string) => Promise<ApiResult>;
   renameLastVersion: (
     filePath: string,

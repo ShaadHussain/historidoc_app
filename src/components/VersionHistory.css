@@ -189,6 +189,13 @@
   cursor: not-allowed;
 }
 
+.commit-error {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  color: #fb923c;
+  line-height: 1.5;
+}
+
 .versions-section {
   flex: 1;
   display: flex;

@@ -20,6 +20,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameMessage, setRenameMessage] = useState('');
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [commitError, setCommitError] = useState<string | null>(null);
   const [diffVersion, setDiffVersion] = useState<Version | null>(null);
   const [diffContent, setDiffContent] = useState('');
   const [diffLoading, setDiffLoading] = useState(false);
@@ -43,9 +44,15 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
     if (!window.electron || !selectedFile) return;
 
     setLoading(true);
+    setCommitError(null);
 
-    // Check if there are any changes
     const changeCheck = await window.electron.checkFileChanges(selectedFile);
+
+    if (changeCheck.fileMissing) {
+      setCommitError('This file has moved. Please re-link it from the file list before saving a version.');
+      setLoading(false);
+      return;
+    }
 
     if (!changeCheck.hasChanges && versions.length > 0) {
       // No changes detected, show rename dialog
@@ -270,6 +277,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
             {loading ? 'Saving...' : 'Save Version'}
           </button>
         </div>
+        {commitError && <div className="commit-error">{commitError}</div>}
       </div>
 
       <div className="versions-section">

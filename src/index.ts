@@ -180,9 +180,14 @@ event: This object contains information about the sender (like which window sent
 */
 
 ipcMain.handle("check-file-changes", async (event, filePath: string) => {
+  try {
+    await fs.access(filePath);
+  } catch {
+    return { hasChanges: false, fileMissing: true };
+  }
+
   const repoPath = getRepoPath(filePath);
   const targetFilePath = path.join(repoPath, path.basename(filePath));
-
   await fs.copyFile(filePath, targetFilePath);
 
   const git = simpleGit(repoPath);
