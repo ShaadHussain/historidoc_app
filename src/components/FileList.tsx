@@ -8,9 +8,10 @@ interface FileListProps {
   onSelectFile: (filePath: string) => void;
   missingFiles?: Set<string>;
   onRelink?: (filePath: string) => void;
+  deprecatedFiles?: string[];
 }
 
-const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new Set(), onRelink }: FileListProps) => {
+const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new Set(), onRelink, deprecatedFiles = [] }: FileListProps) => {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
 
@@ -66,24 +67,28 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new
           trackedFiles.map((filePath) => {
             const isExpanded = expandedPaths.has(filePath);
             const isMissing = missingFiles.has(filePath);
+            const isDeprecated = deprecatedFiles.includes(filePath);
             return (
               <div
                 key={filePath}
-                className={`file-tab ${filePath === selectedFile ? 'active' : ''} ${isMissing ? 'missing' : ''}`}
+                className={`file-tab ${filePath === selectedFile ? 'active' : ''} ${isMissing ? 'missing' : ''} ${isDeprecated ? 'deprecated' : ''}`}
                 onClick={() => onSelectFile(filePath)}
               >
                 <div className="file-info">
                   <div className="file-name-row">
-                    {isMissing && <AlertTriangle size={13} className="missing-icon" />}
+                    {isMissing && !isDeprecated && <AlertTriangle size={13} className="missing-icon" />}
                     <div className="file-name">{getFileName(filePath)}</div>
+                    {isDeprecated && <span className="archived-badge">Archived</span>}
                   </div>
-                  {isMissing ? (
+                  {isMissing && !isDeprecated ? (
                     <button
                       className="relink-btn"
                       onClick={(e) => { e.stopPropagation(); onRelink?.(filePath); }}
                     >
                       File moved — Re-link
                     </button>
+                  ) : isDeprecated ? (
+                    <div className="deprecated-path">{filePath}</div>
                   ) : (
                     <div className="file-path-container">
                       <button

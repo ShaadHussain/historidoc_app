@@ -5,6 +5,7 @@ import VersionHistory from "./VersionHistory";
 import ConfirmDialog from "./ConfirmDialog";
 import RelinkDialog from "./RelinkDialog";
 import FileMissingToasts from "./FileMissingToasts";
+import StartFreshPreserveDialog from "./StartFreshPreserveDialog";
 import "./App.css";
 
 const App = () => {
@@ -16,7 +17,10 @@ const App = () => {
   const [missingFiles, setMissingFiles] = useState<Set<string>>(new Set());
   const [relinkTargetPath, setRelinkTargetPath] = useState<string | null>(null);
   const [toastFiles, setToastFiles] = useState<string[]>([]);
+  const [deprecatedFiles, setDeprecatedFiles] = useState<string[]>([]);
+  const [showStartFreshPreserveDialog, setShowStartFreshPreserveDialog] = useState(false);
   const suppressMovePromptRef = useRef(false);
+  const deprecatedFilesRef = useRef<string[]>([]);
 
   useEffect(() => {
     loadTrackedFiles();
@@ -26,6 +30,7 @@ const App = () => {
     });
 
     window.electron.onFileMissing((filePath) => {
+      if (deprecatedFilesRef.current.includes(filePath)) return;
       setMissingFiles((prev) => new Set([...prev, filePath]));
       setToastFiles((prev) => prev.includes(filePath) ? prev : [...prev, filePath]);
       if (!suppressMovePromptRef.current) {
@@ -41,7 +46,13 @@ const App = () => {
     if (files.length > 0 && !selectedFile) {
       setSelectedFile(files[0]);
     }
-    const missing = await window.electron.checkMissingFiles(files);
+
+    const deprecated: string[] = (await window.electron.getPreference("deprecatedFiles")) || [];
+    setDeprecatedFiles(deprecated);
+    deprecatedFilesRef.current = deprecated;
+
+    const activeFiles = files.filter((f) => !deprecated.includes(f));
+    const missing = await window.electron.checkMissingFiles(activeFiles);
     setMissingFiles(new Set(missing));
   };
 
@@ -112,7 +123,17 @@ const App = () => {
       dismissToast(oldPath);
       await loadTrackedFiles();
       setSelectedFile(newPath);
+      if (result.preserved) {
+        setShowStartFreshPreserveDialog(true);
+      }
     }
+  };
+
+  const handleStartFreshPreserveDismiss = async (alwaysDelete: boolean) => {
+    if (alwaysDelete) {
+      await window.electron.setPreference("alwaysDeleteOnStartFresh", true);
+    }
+    setShowStartFreshPreserveDialog(false);
   };
 
   const handleSuppressMovePrompt = () => {
@@ -230,6 +251,7 @@ const App = () => {
           onSelectFile={handleSelectFile}
           missingFiles={missingFiles}
           onRelink={(filePath) => setRelinkTargetPath(filePath)}
+          deprecatedFiles={deprecatedFiles}
         />
         <VersionHistory
           selectedFile={selectedFile}
@@ -269,6 +291,10 @@ const App = () => {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
+
+      {showStartFreshPreserveDialog && (
+        <StartFreshPreserveDialog onDismiss={handleStartFreshPreserveDismiss} />
+      )}
     </div>
   );
 };

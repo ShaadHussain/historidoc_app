@@ -1,5 +1,14 @@
 # Features
 
+## FEAT_108
+Preserve archived history after Start Fresh (default behavior)
+- Start Fresh keeps old path as a faded "Archived" entry in the file list by default
+- Archived entries are visually dimmed with an "Archived" badge; history is still viewable
+- Archived files are excluded from missing-file checks and live-detection toasts
+- After Start Fresh, a dialog explains the behavior and offers "Always delete old history" toggle
+- "Always delete old file history after Start Fresh" is an app-wide persistent setting
+- Untrack and Delete History operations also clean up the deprecated files list
+
 ## FEAT_107
 Toast notification for live file-missing detection
 - A small bottom-right toast always appears when a file disappears while the app is running
