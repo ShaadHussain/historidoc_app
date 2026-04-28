@@ -32,7 +32,7 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  //   mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
@@ -162,7 +162,10 @@ ipcMain.handle("check-file-changes", async (event, filePath: string) => {
 
   const git = simpleGit(repoPath);
 
-  const hasAnyCommits = await git.raw(["rev-parse", "HEAD"]).then(() => true).catch(() => false);
+  const hasAnyCommits = await git
+    .raw(["rev-parse", "HEAD"])
+    .then(() => true)
+    .catch(() => false);
   if (!hasAnyCommits) {
     return { hasChanges: true };
   }
@@ -273,6 +276,24 @@ ipcMain.handle("remove-tracked-file", async (event, filePath: string) => {
   }
 });
 
+ipcMain.handle("delete-file-history", async (event, filePath: string) => {
+  try {
+    const trackedFilesPath = getTrackedFilesPath();
+    const data = await fs.readFile(trackedFilesPath, "utf-8");
+    let trackedFiles: string[] = JSON.parse(data);
+
+    trackedFiles = trackedFiles.filter((f) => f !== filePath);
+    await fs.writeFile(trackedFilesPath, JSON.stringify(trackedFiles, null, 2));
+
+    const repoPath = getRepoPath(filePath);
+    await fs.rm(repoPath, { recursive: true, force: true });
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
 ipcMain.handle(
   "export-version",
   async (
@@ -315,18 +336,28 @@ ipcMain.handle(
   },
 );
 
-ipcMain.handle("get-diff", async (event, filePath: string, commitHash: string) => {
-  try {
-    const repoPath = getRepoPath(filePath);
-    const git = simpleGit(repoPath);
-    const fileName = path.basename(filePath);
+ipcMain.handle(
+  "get-diff",
+  async (event, filePath: string, commitHash: string) => {
+    try {
+      const repoPath = getRepoPath(filePath);
+      const git = simpleGit(repoPath);
+      const fileName = path.basename(filePath);
 
-    const diff = await git.raw(["diff-tree", "--no-commit-id", "-p", commitHash, "--", fileName]);
-    return { success: true, diff };
-  } catch (error) {
-    return { success: false, error: (error as Error).message, diff: "" };
-  }
-});
+      const diff = await git.raw([
+        "diff-tree",
+        "--no-commit-id",
+        "-p",
+        commitHash,
+        "--",
+        fileName,
+      ]);
+      return { success: true, diff };
+    } catch (error) {
+      return { success: false, error: (error as Error).message, diff: "" };
+    }
+  },
+);
 
 ipcMain.handle("get-preference", async (event, key: string) => {
   try {

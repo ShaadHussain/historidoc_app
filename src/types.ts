@@ -24,6 +24,7 @@ export interface ElectronAPI {
   getVersions: (filePath: string) => Promise<Version[]>;
   restoreVersion: (filePath: string, commitHash: string) => Promise<ApiResult>;
   removeTrackedFile: (filePath: string) => Promise<ApiResult>;
+  deleteFileHistory: (filePath: string) => Promise<ApiResult>;
   exportVersion: (
     filePath: string,
     commitHash: string,

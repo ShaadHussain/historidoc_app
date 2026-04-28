@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("restore-version", filePath, commitHash),
   removeTrackedFile: (filePath: string) =>
     ipcRenderer.invoke("remove-tracked-file", filePath),
+  deleteFileHistory: (filePath: string) =>
+    ipcRenderer.invoke("delete-file-history", filePath),
   exportVersion: (
     filePath: string,
     commitHash: string,
