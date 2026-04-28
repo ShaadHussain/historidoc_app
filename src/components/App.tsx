@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Info } from "lucide-react";
 import FileList from "./FileList";
 import VersionHistory from "./VersionHistory";
@@ -11,19 +11,34 @@ const App = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingFilePath, setPendingFilePath] = useState("");
+  const [missingFiles, setMissingFiles] = useState<Set<string>>(new Set());
+  const [relinkTargetPath, setRelinkTargetPath] = useState<string | null>(null);
+  const suppressMovePromptRef = useRef(false);
 
   useEffect(() => {
     loadTrackedFiles();
+
+    window.electron.getPreference("suppressMovePrompt").then((val) => {
+      suppressMovePromptRef.current = !!val;
+    });
+
+    window.electron.onFileMissing((filePath) => {
+      setMissingFiles((prev) => new Set([...prev, filePath]));
+      if (!suppressMovePromptRef.current) {
+        setRelinkTargetPath(filePath);
+      }
+    });
   }, []);
 
   const loadTrackedFiles = async () => {
-    if (window.electron) {
-      const files = await window.electron.getTrackedFiles();
-      setTrackedFiles(files);
-      if (files.length > 0 && !selectedFile) {
-        setSelectedFile(files[0]);
-      }
+    if (!window.electron) return;
+    const files = await window.electron.getTrackedFiles();
+    setTrackedFiles(files);
+    if (files.length > 0 && !selectedFile) {
+      setSelectedFile(files[0]);
     }
+    const missing = await window.electron.checkMissingFiles(files);
+    setMissingFiles(new Set(missing));
   };
 
   const handleAddFile = async () => {
@@ -61,6 +76,33 @@ const App = () => {
         setSelectedFile(trackedFiles.length > 0 ? trackedFiles[0] : null);
       }
     }
+  };
+
+  const handleRelink = async (oldPath: string, newPath: string) => {
+    if (!window.electron) return;
+    const result = await window.electron.relinkFile(oldPath, newPath);
+    if (result.success) {
+      setRelinkTargetPath(null);
+      setMissingFiles((prev) => { const s = new Set(prev); s.delete(oldPath); return s; });
+      await loadTrackedFiles();
+      setSelectedFile(newPath);
+    }
+  };
+
+  const handleStartFresh = async (oldPath: string, newPath: string) => {
+    if (!window.electron) return;
+    const result = await window.electron.startFresh(oldPath, newPath);
+    if (result.success) {
+      setRelinkTargetPath(null);
+      setMissingFiles((prev) => { const s = new Set(prev); s.delete(oldPath); return s; });
+      await loadTrackedFiles();
+      setSelectedFile(newPath);
+    }
+  };
+
+  const handleSuppressMovePrompt = () => {
+    suppressMovePromptRef.current = true;
+    window.electron.setPreference("suppressMovePrompt", true);
   };
 
   const handleSelectFile = (filePath: string) => {
@@ -171,6 +213,8 @@ const App = () => {
           trackedFiles={trackedFiles}
           selectedFile={selectedFile}
           onSelectFile={handleSelectFile}
+          missingFiles={missingFiles}
+          onRelink={(filePath) => setRelinkTargetPath(filePath)}
         />
         <VersionHistory
           selectedFile={selectedFile}
