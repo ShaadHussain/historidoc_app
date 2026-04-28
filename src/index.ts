@@ -111,6 +111,28 @@ const setupWatcher = async (): Promise<void> => {
   });
 };
 
+const getPreferenceValue = async (key: string): Promise<any> => {
+  try {
+    const preferencesPath = path.join(getAppDataPath(), "preferences.json");
+    const data = await fs.readFile(preferencesPath, "utf-8");
+    return JSON.parse(data)[key] ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const setPreferenceValue = async (key: string, value: any): Promise<void> => {
+  const preferencesPath = path.join(getAppDataPath(), "preferences.json");
+  await ensureDir(getAppDataPath());
+  let preferences: Record<string, any> = {};
+  try {
+    const data = await fs.readFile(preferencesPath, "utf-8");
+    preferences = JSON.parse(data);
+  } catch {}
+  preferences[key] = value;
+  await fs.writeFile(preferencesPath, JSON.stringify(preferences, null, 2));
+};
+
 const initRepo = async (filePath: string): Promise<string> => {
   const repoPath = getRepoPath(filePath);
   await ensureDir(repoPath);
@@ -296,6 +318,12 @@ ipcMain.handle("remove-tracked-file", async (event, filePath: string) => {
     const trackedFiles = await loadTrackedFiles();
     const updated = trackedFiles.filter((f) => f !== filePath);
     await fs.writeFile(getTrackedFilesPath(), JSON.stringify(updated, null, 2));
+
+    const deprecated: string[] = (await getPreferenceValue("deprecatedFiles")) || [];
+    if (deprecated.includes(filePath)) {
+      await setPreferenceValue("deprecatedFiles", deprecated.filter((f) => f !== filePath));
+    }
+
     watcher?.unwatch(filePath);
     return { success: true };
   } catch (error) {
@@ -309,6 +337,12 @@ ipcMain.handle("delete-file-history", async (event, filePath: string) => {
     const updated = trackedFiles.filter((f) => f !== filePath);
     await fs.writeFile(getTrackedFilesPath(), JSON.stringify(updated, null, 2));
     await fs.rm(getRepoPath(filePath), { recursive: true, force: true });
+
+    const deprecated: string[] = (await getPreferenceValue("deprecatedFiles")) || [];
+    if (deprecated.includes(filePath)) {
+      await setPreferenceValue("deprecatedFiles", deprecated.filter((f) => f !== filePath));
+    }
+
     watcher?.unwatch(filePath);
     return { success: true };
   } catch (error) {
@@ -410,20 +444,31 @@ ipcMain.handle(
   "start-fresh",
   async (event, oldPath: string, newPath: string) => {
     try {
+      const alwaysDelete = !!(await getPreferenceValue("alwaysDeleteOnStartFresh"));
       const trackedFiles = await loadTrackedFiles();
-      const updated = trackedFiles.filter((f) => f !== oldPath);
-      if (!updated.includes(newPath)) updated.push(newPath);
-      await fs.writeFile(
-        getTrackedFilesPath(),
-        JSON.stringify(updated, null, 2),
-      );
+
+      if (alwaysDelete) {
+        const updated = trackedFiles.filter((f) => f !== oldPath);
+        if (!updated.includes(newPath)) updated.push(newPath);
+        await fs.writeFile(getTrackedFilesPath(), JSON.stringify(updated, null, 2));
+        await fs.rm(getRepoPath(oldPath), { recursive: true, force: true });
+      } else {
+        // Keep old path in tracked list as a deprecated/archived entry
+        const updated = [...trackedFiles];
+        if (!updated.includes(newPath)) updated.push(newPath);
+        await fs.writeFile(getTrackedFilesPath(), JSON.stringify(updated, null, 2));
+
+        const deprecated: string[] = (await getPreferenceValue("deprecatedFiles")) || [];
+        if (!deprecated.includes(oldPath)) {
+          await setPreferenceValue("deprecatedFiles", [...deprecated, oldPath]);
+        }
+      }
 
       await initRepo(newPath);
-
       watcher?.unwatch(oldPath);
       watcher?.add(newPath);
 
-      return { success: true };
+      return { success: true, preserved: !alwaysDelete };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
@@ -458,38 +503,12 @@ ipcMain.handle("check-missing-files", async (event, filePaths: string[]) => {
 });
 
 ipcMain.handle("get-preference", async (event, key: string) => {
-  try {
-    const preferencesPath = path.join(getAppDataPath(), "preferences.json");
-    await ensureDir(getAppDataPath());
-
-    try {
-      const data = await fs.readFile(preferencesPath, "utf-8");
-      const preferences = JSON.parse(data);
-      return preferences[key];
-    } catch {
-      return null;
-    }
-  } catch {
-    return null;
-  }
+  return getPreferenceValue(key);
 });
 
 ipcMain.handle("set-preference", async (event, key: string, value: any) => {
   try {
-    const preferencesPath = path.join(getAppDataPath(), "preferences.json");
-    await ensureDir(getAppDataPath());
-
-    let preferences: Record<string, any> = {};
-    try {
-      const data = await fs.readFile(preferencesPath, "utf-8");
-      preferences = JSON.parse(data);
-    } catch {
-      // File doesn't exist yet
-    }
-
-    preferences[key] = value;
-    await fs.writeFile(preferencesPath, JSON.stringify(preferences, null, 2));
-
+    await setPreferenceValue(key, value);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
