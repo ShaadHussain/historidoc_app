@@ -61,8 +61,9 @@ const RelinkDialog = ({ missingFilePath, onRelink, onStartFresh, onDismiss, onSu
         <div className="relink-body">
           <div className="relink-warning">
             Make sure the file you select is the same file in a new location.
-            If you link an unrelated file, its version history will describe the wrong content —
-            and restoring any version would overwrite it with content from <strong>{getFileName(missingFilePath)}</strong>.
+            If you link an unrelated file, the two files will share one history — older versions
+            will still describe <strong>{getFileName(missingFilePath)}</strong>, and restoring
+            them would overwrite your new file with that content.
           </div>
 
           <div className="relink-preview-section">
