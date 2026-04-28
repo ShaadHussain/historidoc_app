@@ -26,6 +26,10 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("export-version", filePath, commitHash, versionMessage),
   getDiff: (filePath: string, commitHash: string) =>
     ipcRenderer.invoke("get-diff", filePath, commitHash),
+  onFileMissing: (callback: (filePath: string) => void) =>
+    ipcRenderer.on("file-missing", (_, filePath) => callback(filePath)),
+  checkMissingFiles: (filePaths: string[]) =>
+    ipcRenderer.invoke("check-missing-files", filePaths),
   getPreference: (key: string) => ipcRenderer.invoke("get-preference", key),
   setPreference: (key: string, value: any) =>
     ipcRenderer.invoke("set-preference", key, value),
