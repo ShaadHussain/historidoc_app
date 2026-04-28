@@ -1,0 +1,212 @@
+.relink-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.relink-modal {
+  background: #1e293b;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  border-radius: 8px;
+  width: 55%;
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+}
+
+.relink-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.relink-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fb923c;
+  margin-bottom: 0.2rem;
+}
+
+.relink-filename {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.relink-body {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.relink-warning {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  background: rgba(251, 146, 60, 0.06);
+  border: 1px solid rgba(251, 146, 60, 0.2);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+}
+
+.relink-warning strong {
+  color: #e2e8f0;
+}
+
+.relink-preview-label,
+.relink-choose-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.relink-preview {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.relink-pick-btn {
+  background: none;
+  border: 1px dashed rgba(99, 102, 241, 0.5);
+  color: #818cf8;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.relink-pick-btn:hover {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: #818cf8;
+}
+
+.relink-chosen-path {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.relink-chosen-path span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.relink-change-btn {
+  background: none;
+  border: none;
+  color: #60a5fa;
+  font-size: 0.8rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.relink-change-btn:hover {
+  text-decoration: underline;
+}
+
+.relink-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.relink-suppress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: #64748b;
+  cursor: pointer;
+  user-select: none;
+}
+
+.relink-suppress input {
+  cursor: pointer;
+}
+
+.relink-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.relink-dismiss-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.relink-dismiss-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+}
+
+.relink-fresh-btn {
+  background: none;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  color: #818cf8;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.relink-fresh-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #818cf8;
+}
+
+.relink-confirm-btn {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+  border: none;
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.relink-confirm-btn:hover {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
