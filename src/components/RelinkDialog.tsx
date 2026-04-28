@@ -66,6 +66,11 @@ const RelinkDialog = ({ missingFilePath, onRelink, onStartFresh, onDismiss, onSu
             them would overwrite your new file with that content.
           </div>
 
+          <div className="relink-deleted-note">
+            If you intentionally deleted this file, you can dismiss this dialog and leave it as is to
+            keep the history, or permanently remove it from File Settings.
+          </div>
+
           <div className="relink-preview-section">
             <div className="relink-preview-label">Last saved version preview</div>
             <div className="relink-preview">

@@ -1,5 +1,12 @@
 # Features
 
+## FEAT_107
+Toast notification for live file-missing detection
+- A small bottom-right toast always appears when a file disappears while the app is running
+- Toast shows filename, an X to dismiss, and a "See details" button to open the RelinkDialog
+- "Don't ask again" only suppresses the auto-dialog; the toast always fires
+- RelinkDialog now includes a note: if the file was intentionally deleted, users can leave it as is or remove it from File Settings
+
 ## FEAT_106
 File move detection and re-linking
 - chokidar watches all tracked files; fires immediately when a file disappears

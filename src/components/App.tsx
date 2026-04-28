@@ -4,6 +4,7 @@ import FileList from "./FileList";
 import VersionHistory from "./VersionHistory";
 import ConfirmDialog from "./ConfirmDialog";
 import RelinkDialog from "./RelinkDialog";
+import FileMissingToasts from "./FileMissingToasts";
 import "./App.css";
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
   const [pendingFilePath, setPendingFilePath] = useState("");
   const [missingFiles, setMissingFiles] = useState<Set<string>>(new Set());
   const [relinkTargetPath, setRelinkTargetPath] = useState<string | null>(null);
+  const [toastFiles, setToastFiles] = useState<string[]>([]);
   const suppressMovePromptRef = useRef(false);
 
   useEffect(() => {
@@ -25,6 +27,7 @@ const App = () => {
 
     window.electron.onFileMissing((filePath) => {
       setMissingFiles((prev) => new Set([...prev, filePath]));
+      setToastFiles((prev) => prev.includes(filePath) ? prev : [...prev, filePath]);
       if (!suppressMovePromptRef.current) {
         setRelinkTargetPath(filePath);
       }
@@ -79,12 +82,22 @@ const App = () => {
     }
   };
 
+  const dismissToast = (filePath: string) => {
+    setToastFiles((prev) => prev.filter((f) => f !== filePath));
+  };
+
+  const handleSeeDetails = (filePath: string) => {
+    dismissToast(filePath);
+    setRelinkTargetPath(filePath);
+  };
+
   const handleRelink = async (oldPath: string, newPath: string) => {
     if (!window.electron) return;
     const result = await window.electron.relinkFile(oldPath, newPath);
     if (result.success) {
       setRelinkTargetPath(null);
       setMissingFiles((prev) => { const s = new Set(prev); s.delete(oldPath); return s; });
+      dismissToast(oldPath);
       await loadTrackedFiles();
       setSelectedFile(newPath);
     }
@@ -96,6 +109,7 @@ const App = () => {
     if (result.success) {
       setRelinkTargetPath(null);
       setMissingFiles((prev) => { const s = new Set(prev); s.delete(oldPath); return s; });
+      dismissToast(oldPath);
       await loadTrackedFiles();
       setSelectedFile(newPath);
     }
@@ -232,6 +246,12 @@ const App = () => {
           </div>
         </div>
       )}
+
+      <FileMissingToasts
+        toastFiles={toastFiles}
+        onDismiss={dismissToast}
+        onSeeDetails={handleSeeDetails}
+      />
 
       {relinkTargetPath && (
         <RelinkDialog

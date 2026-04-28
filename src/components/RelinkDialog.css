@@ -5,7 +5,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 1000;
+  z-index: 1100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,6 +57,13 @@
 
 .relink-warning strong {
   color: #e2e8f0;
+}
+
+.relink-deleted-note {
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.6;
+  padding: 0 0.25rem;
 }
 
 .relink-preview-label,
