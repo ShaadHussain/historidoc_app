@@ -60,10 +60,9 @@ const RelinkDialog = ({ missingFilePath, onRelink, onStartFresh, onDismiss, onSu
 
         <div className="relink-body">
           <div className="relink-warning">
-            Ensure the file you are relinking to is the same file that was being tracked.
-            Linking will attach <strong>{getFileName(missingFilePath)}</strong>'s entire version
-            history to the new file. This could corrupt your history if it isn't the same
-            file in a new location.
+            Make sure the file you select is the same file in a new location.
+            If you link an unrelated file, its version history will describe the wrong content —
+            and restoring any version would overwrite it with content from <strong>{getFileName(missingFilePath)}</strong>.
           </div>
 
           <div className="relink-preview-section">
