@@ -51,6 +51,18 @@ const App = () => {
     }
   };
 
+  const handleDeleteFile = async (filePath: string) => {
+    if (!window.electron) return;
+
+    const result = await window.electron.deleteFileHistory(filePath);
+    if (result.success) {
+      await loadTrackedFiles();
+      if (selectedFile === filePath) {
+        setSelectedFile(trackedFiles.length > 0 ? trackedFiles[0] : null);
+      }
+    }
+  };
+
   const handleSelectFile = (filePath: string) => {
     setSelectedFile(filePath);
   };
@@ -162,7 +174,8 @@ const App = () => {
         />
         <VersionHistory
           selectedFile={selectedFile}
-          onRemoveFile={handleRemoveFile}
+          onUntrackFile={handleRemoveFile}
+          onDeleteFile={handleDeleteFile}
         />
       </div>
 

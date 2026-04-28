@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Settings, ArrowLeft } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
 import './VersionHistory.css';
 
 interface VersionHistoryProps {
   selectedFile: string | null;
-  onRemoveFile?: (filePath: string) => void;
+  onUntrackFile?: (filePath: string) => void;
+  onDeleteFile?: (filePath: string) => void;
 }
 
-const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => {
+const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHistoryProps) => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [commitMessage, setCommitMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showUntrackConfirm, setShowUntrackConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameMessage, setRenameMessage] = useState('');
@@ -132,18 +135,13 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
     }
   };
 
-  const handleDeleteFile = () => {
-    setShowDeleteConfirm(true);
+  const confirmUntrack = () => {
+    if (selectedFile && onUntrackFile) onUntrackFile(selectedFile);
+    setShowUntrackConfirm(false);
   };
 
   const confirmDelete = () => {
-    if (selectedFile && onRemoveFile) {
-      onRemoveFile(selectedFile);
-    }
-    setShowDeleteConfirm(false);
-  };
-
-  const cancelDelete = () => {
+    if (selectedFile && onDeleteFile) onDeleteFile(selectedFile);
     setShowDeleteConfirm(false);
   };
 
@@ -179,6 +177,73 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
     );
   }
 
+  if (showSettings) {
+    return (
+      <div className="version-history">
+        <div className="history-header">
+          <div>
+            <h2>{getFileName(selectedFile)}</h2>
+            <p className="file-path">{selectedFile}</p>
+          </div>
+          <button className="settings-back-btn" onClick={() => setShowSettings(false)} title="Back">
+            <ArrowLeft size={18} />
+          </button>
+        </div>
+
+        <div className="settings-view">
+          <div className="danger-zone">
+            <div className="danger-zone-title">Danger Zone</div>
+
+            <div className="danger-action">
+              <div className="danger-action-text">
+                <div className="danger-action-name">Untrack File</div>
+                <div className="danger-action-desc">Removes this file from tracking. Your version history is preserved — if you add it again later, it will still be there.</div>
+              </div>
+              <button className="untrack-btn" onClick={() => setShowUntrackConfirm(true)}>Untrack</button>
+            </div>
+
+            <div className="danger-divider" />
+
+            <div className="danger-action">
+              <div className="danger-action-text">
+                <div className="danger-action-name">Delete File & All History</div>
+                <div className="danger-action-desc">Permanently deletes all saved versions for this file. This cannot be undone.</div>
+              </div>
+              <button className="danger-delete-btn" onClick={() => setShowDeleteConfirm(true)}>Delete All</button>
+            </div>
+          </div>
+        </div>
+
+        {showUntrackConfirm && (
+          <div className="delete-confirm-overlay">
+            <div className="delete-confirm-dialog">
+              <h3>Untrack File?</h3>
+              <p>"{getFileName(selectedFile)}" will no longer be tracked. Your version history will be preserved.</p>
+              <div className="confirm-actions">
+                <button className="cancel-btn" onClick={() => setShowUntrackConfirm(false)}>Cancel</button>
+                <button className="confirm-delete-btn" onClick={confirmUntrack}>Untrack</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDeleteConfirm && (
+          <div className="delete-confirm-overlay">
+            <div className="delete-confirm-dialog">
+              <h3>Delete File & All History?</h3>
+              <p>All saved versions for "{getFileName(selectedFile)}" will be permanently deleted.</p>
+              <p className="warning-text">This cannot be undone.</p>
+              <div className="confirm-actions">
+                <button className="cancel-btn" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+                <button className="confirm-delete-btn" onClick={confirmDelete}>Delete All</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="version-history">
       <div className="history-header">
@@ -186,6 +251,9 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
           <h2>{getFileName(selectedFile)}</h2>
           <p className="file-path">{selectedFile}</p>
         </div>
+        <button className="settings-btn" onClick={() => setShowSettings(true)} title="File settings">
+          <Settings size={18} />
+        </button>
       </div>
 
       <div className="commit-section">
@@ -264,28 +332,6 @@ const VersionHistory = ({ selectedFile, onRemoveFile }: VersionHistoryProps) => 
           )}
         </div>
       </div>
-
-      {onRemoveFile && (
-        <div className="delete-section">
-          <button className="delete-file-btn" onClick={handleDeleteFile}>
-            Delete File from Tracking
-          </button>
-        </div>
-      )}
-
-      {showDeleteConfirm && (
-        <div className="delete-confirm-overlay">
-          <div className="delete-confirm-dialog">
-            <h3>Delete File from Tracking?</h3>
-            <p>Are you sure you want to stop tracking "{getFileName(selectedFile)}"?</p>
-            <p className="warning-text">This will remove all version history for this file.</p>
-            <div className="confirm-actions">
-              <button className="cancel-btn" onClick={cancelDelete}>Cancel</button>
-              <button className="confirm-delete-btn" onClick={confirmDelete}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {diffVersion && (
         <DiffViewer

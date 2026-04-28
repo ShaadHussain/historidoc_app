@@ -9,6 +9,111 @@
   padding: 1.5rem 2rem;
   border-bottom: 1px solid rgba(37, 99, 235, 0.3);
   background: rgba(26, 31, 58, 0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.settings-btn,
+.settings-back-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.settings-btn:hover,
+.settings-back-btn:hover {
+  color: #94a3b8;
+}
+
+.settings-view {
+  padding: 1.5rem 2rem;
+  flex: 1;
+}
+
+.danger-zone {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.danger-zone-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #f87171;
+  margin-bottom: 1.25rem;
+}
+
+.danger-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.danger-action-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  margin-bottom: 0.25rem;
+}
+
+.danger-action-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.danger-divider {
+  height: 1px;
+  background: rgba(239, 68, 68, 0.15);
+  margin: 1.25rem 0;
+}
+
+.untrack-btn {
+  background: none;
+  border: 1px solid rgba(251, 146, 60, 0.5);
+  color: #fb923c;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.untrack-btn:hover {
+  background: rgba(251, 146, 60, 0.1);
+  border-color: #fb923c;
+}
+
+.danger-delete-btn {
+  background: none;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #f87171;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.danger-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
 }
 
 .history-header h2 {
