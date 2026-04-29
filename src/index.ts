@@ -245,9 +245,13 @@ ipcMain.handle(
 
       let commitMessage = message;
       if (!commitMessage) {
-        const log = await git.log();
-        const versionNumber = log.all.length + 1;
-        commitMessage = `V${versionNumber}`;
+        const hasAnyCommits = await git.raw(["rev-parse", "HEAD"]).then(() => true).catch(() => false);
+        if (!hasAnyCommits) {
+          commitMessage = "V1";
+        } else {
+          const log = await git.log();
+          commitMessage = `V${log.all.length + 1}`;
+        }
       }
 
       await git.commit(commitMessage);
