@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_109
+App-wide settings page
+- Gear icon in the main header opens a settings modal
+- "File History" section contains the "Always delete old file history after Start Fresh" toggle
+- Toggle reads and writes the alwaysDeleteOnStartFresh preference immediately on change
+
 ## FEAT_108
 Preserve archived history after Start Fresh (default behavior)
 - Start Fresh keeps old path as a faded "Archived" entry in the file list by default

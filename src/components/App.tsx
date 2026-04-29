@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Info } from "lucide-react";
+import { Info, Settings } from "lucide-react";
 import FileList from "./FileList";
 import VersionHistory from "./VersionHistory";
 import ConfirmDialog from "./ConfirmDialog";
 import RelinkDialog from "./RelinkDialog";
 import FileMissingToasts from "./FileMissingToasts";
 import StartFreshPreserveDialog from "./StartFreshPreserveDialog";
+import AppSettings from "./AppSettings";
 import "./App.css";
 
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
   const [toastFiles, setToastFiles] = useState<string[]>([]);
   const [deprecatedFiles, setDeprecatedFiles] = useState<string[]>([]);
   const [showStartFreshPreserveDialog, setShowStartFreshPreserveDialog] = useState(false);
+  const [showAppSettings, setShowAppSettings] = useState(false);
   const suppressMovePromptRef = useRef(false);
   const deprecatedFilesRef = useRef<string[]>([]);
 
@@ -238,6 +240,9 @@ const App = () => {
               Folders can be tracked too — ideal for whole-project snapshots. For line-by-line change history, track individual files instead.
             </div>
           </div>
+          <button className="header-settings-btn" onClick={() => setShowAppSettings(true)} title="App settings">
+            <Settings size={17} />
+          </button>
           <button className="add-file-btn" onClick={handleAddFile}>
             <span className="icon">+</span> Add File
           </button>
@@ -294,6 +299,10 @@ const App = () => {
 
       {showStartFreshPreserveDialog && (
         <StartFreshPreserveDialog onDismiss={handleStartFreshPreserveDismiss} />
+      )}
+
+      {showAppSettings && (
+        <AppSettings onClose={() => setShowAppSettings(false)} />
       )}
     </div>
   );
