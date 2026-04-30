@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Settings, ArrowLeft, Link2, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
 import './VersionHistory.css';
@@ -333,7 +333,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
                         <span className={`relink-path-value${isExpanded ? ' expanded' : ''}`}>{relinkData.oldPath}</span>
                       </div>
                       <div className="relink-path-row">
-                        <ArrowRight size={12} className="relink-path-arrow" />
+                        <span className="relink-path-tag">to</span>
                         <span className={`relink-path-value relink-path-new${isExpanded ? ' expanded' : ''}`}>{relinkData.newPath}</span>
                       </div>
                     </div>
