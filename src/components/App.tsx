@@ -23,8 +23,12 @@ const App = () => {
   const [showStartFreshPreserveDialog, setShowStartFreshPreserveDialog] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
   const [overlapWarning, setOverlapWarning] = useState<{ newPath: string; overlappingPaths: string[] } | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState(350);
   const suppressMovePromptRef = useRef(false);
   const deprecatedFilesRef = useRef<string[]>([]);
+  const isResizingRef = useRef(false);
+  const resizeStartXRef = useRef(0);
+  const resizeStartWidthRef = useRef(0);
 
   useEffect(() => {
     loadTrackedFiles();
@@ -41,7 +45,36 @@ const App = () => {
         setRelinkTargetPath(filePath);
       }
     });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizingRef.current) return;
+      const delta = e.clientX - resizeStartXRef.current;
+      const newWidth = Math.max(200, Math.min(600, resizeStartWidthRef.current + delta));
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
   }, []);
+
+  const handleDividerMouseDown = (e: React.MouseEvent) => {
+    isResizingRef.current = true;
+    resizeStartXRef.current = e.clientX;
+    resizeStartWidthRef.current = sidebarWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  };
 
   const loadTrackedFiles = async () => {
     if (!window.electron) return;
@@ -262,14 +295,17 @@ const App = () => {
       </div>
 
       <div className="main-content">
-        <FileList
-          trackedFiles={trackedFiles}
-          selectedFile={selectedFile}
-          onSelectFile={handleSelectFile}
-          missingFiles={missingFiles}
-          onRelink={(filePath) => setRelinkTargetPath(filePath)}
-          deprecatedFiles={deprecatedFiles}
-        />
+        <div className="sidebar-pane" style={{ width: sidebarWidth }}>
+          <FileList
+            trackedFiles={trackedFiles}
+            selectedFile={selectedFile}
+            onSelectFile={handleSelectFile}
+            missingFiles={missingFiles}
+            onRelink={(filePath) => setRelinkTargetPath(filePath)}
+            deprecatedFiles={deprecatedFiles}
+          />
+        </div>
+        <div className="resize-divider" onMouseDown={handleDividerMouseDown} />
         <VersionHistory
           selectedFile={selectedFile}
           onUntrackFile={handleRemoveFile}
