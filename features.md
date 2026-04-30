@@ -6,6 +6,12 @@ Warn when a newly tracked path overlaps with an existing tracked path
 - If overlap found, show an informational dialog listing the conflicting paths
 - Both items remain tracked independently — the dialog is purely a heads-up, no action required
 
+## FEAT_111
+Auto-save: save a version on a configurable interval if the file changed
+- Options: Off, every 15 minutes, every 30 minutes, every hour, every 2 hours
+- Controlled from app Settings (gear icon)
+- Only saves a new version if the file content has changed since the last version
+
 ## FEAT_109
 App-wide settings page
 - Gear icon in the main header opens a settings modal
