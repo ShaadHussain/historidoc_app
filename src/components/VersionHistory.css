@@ -318,8 +318,32 @@
   min-width: 0;
 }
 
+.relink-path-value.expanded {
+  white-space: normal;
+  word-break: break-all;
+  overflow: visible;
+}
+
 .relink-path-new {
   color: #7dd3fc;
+}
+
+.relink-expand-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.relink-expand-btn:hover {
+  color: #06b6d4;
 }
 
 .version-card {

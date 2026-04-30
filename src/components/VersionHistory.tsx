@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Settings, ArrowLeft, Link2, ArrowRight } from 'lucide-react';
+import { Copy, Check, Settings, ArrowLeft, Link2, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
 import './VersionHistory.css';
@@ -40,6 +40,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
   const [diffVersion, setDiffVersion] = useState<Version | null>(null);
   const [diffContent, setDiffContent] = useState('');
   const [diffLoading, setDiffLoading] = useState(false);
+  const [expandedRelinkHashes, setExpandedRelinkHashes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (selectedFile) {
@@ -311,6 +312,12 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
             versions.map((version) => {
               const relinkData = parseRelinkMessage(version.message);
               if (relinkData) {
+                const isExpanded = expandedRelinkHashes.has(version.hash);
+                const toggleExpand = () => setExpandedRelinkHashes(prev => {
+                  const next = new Set(prev);
+                  isExpanded ? next.delete(version.hash) : next.add(version.hash);
+                  return next;
+                });
                 return (
                   <div key={version.hash} className="relink-event-card">
                     <div className="relink-event-header">
@@ -323,13 +330,17 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
                     <div className="relink-event-paths">
                       <div className="relink-path-row">
                         <span className="relink-path-tag">from</span>
-                        <span className="relink-path-value">{relinkData.oldPath}</span>
+                        <span className={`relink-path-value${isExpanded ? ' expanded' : ''}`}>{relinkData.oldPath}</span>
                       </div>
                       <div className="relink-path-row">
                         <ArrowRight size={12} className="relink-path-arrow" />
-                        <span className="relink-path-value relink-path-new">{relinkData.newPath}</span>
+                        <span className={`relink-path-value relink-path-new${isExpanded ? ' expanded' : ''}`}>{relinkData.newPath}</span>
                       </div>
                     </div>
+                    <button className="relink-expand-btn" onClick={toggleExpand}>
+                      {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      {isExpanded ? 'Collapse' : 'Show full paths'}
+                    </button>
                   </div>
                 );
               }
