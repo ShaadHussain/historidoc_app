@@ -75,3 +75,8 @@ Add copy button to version hash with checkmark feedback
 - Clicking the copy button (📋 icon) copies the full git commit hash to clipboard
 - Button changes to checkmark (✓) for 2 seconds after copying
 - Provides visual feedback that the hash was successfully copied
+## FEAT_112
+Draggable divider to resize the sidebar/content split
+- Drag the vertical divider between Tracked Files and the version history panel to resize
+- Min width 200px, max 600px
+- Cursor and text-selection locked during drag to prevent jank
