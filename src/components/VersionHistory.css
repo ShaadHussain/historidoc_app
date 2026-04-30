@@ -17,7 +17,7 @@
 
 .settings-header-left {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
@@ -28,6 +28,7 @@
   color: #64748b;
   cursor: pointer;
   padding: 0.25rem;
+  margin-top: 0.25rem;
   border-radius: 4px;
   display: flex;
   align-items: center;
