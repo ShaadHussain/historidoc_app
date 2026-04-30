@@ -10,6 +10,14 @@ interface VersionHistoryProps {
   onDeleteFile?: (filePath: string) => void;
 }
 
+const AUTO_SAVE_OPTIONS = [
+  { label: 'Off', value: null },
+  { label: 'Every 15 minutes', value: 15 },
+  { label: 'Every 30 minutes', value: 30 },
+  { label: 'Every hour', value: 60 },
+  { label: 'Every 2 hours', value: 120 },
+];
+
 const parseRelinkMessage = (message: string): { oldPath: string; newPath: string } | null => {
   const prefix = "Relinked from ";
   if (!message.startsWith(prefix)) return null;
@@ -41,12 +49,30 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
   const [diffContent, setDiffContent] = useState('');
   const [diffLoading, setDiffLoading] = useState(false);
   const [expandedRelinkHashes, setExpandedRelinkHashes] = useState<Set<string>>(new Set());
+  const [fileAutoSaveInterval, setFileAutoSaveInterval] = useState<number | null>(null);
 
   useEffect(() => {
     if (selectedFile) {
       loadVersions();
     }
   }, [selectedFile]);
+
+  useEffect(() => {
+    if (showSettings && selectedFile) {
+      window.electron.getPreference("autoSaveIntervals").then((intervals: Record<string, number | null> | null) => {
+        setFileAutoSaveInterval(intervals?.[selectedFile] ?? null);
+      });
+    }
+  }, [showSettings, selectedFile]);
+
+  const handleFileAutoSaveChange = async (value: string) => {
+    if (!selectedFile) return;
+    const parsed = value === 'null' ? null : parseInt(value, 10);
+    setFileAutoSaveInterval(parsed);
+    const intervals: Record<string, number | null> = await window.electron.getPreference("autoSaveIntervals") || {};
+    intervals[selectedFile] = parsed;
+    await window.electron.setPreference("autoSaveIntervals", intervals);
+  };
 
   const loadVersions = async () => {
     if (!window.electron || !selectedFile) return;
@@ -217,6 +243,27 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
         </div>
 
         <div className="settings-view">
+          <div className="file-settings-section">
+            <div className="file-settings-section-title">Auto-Save</div>
+            <div className="file-settings-row">
+              <div className="file-settings-row-text">
+                <div className="file-settings-row-label">Auto-save interval</div>
+                <div className="file-settings-row-desc">Automatically save a version if this file has changed.</div>
+              </div>
+              <select
+                className="file-settings-select"
+                value={fileAutoSaveInterval === null ? 'null' : String(fileAutoSaveInterval)}
+                onChange={(e) => handleFileAutoSaveChange(e.target.value)}
+              >
+                {AUTO_SAVE_OPTIONS.map((opt) => (
+                  <option key={String(opt.value)} value={opt.value === null ? 'null' : String(opt.value)}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="danger-zone">
             <div className="danger-zone-title">Danger Zone</div>
 
