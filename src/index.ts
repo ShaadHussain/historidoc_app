@@ -42,6 +42,7 @@ const createWindow = (): void => {
 app.on("ready", async () => {
   createWindow();
   await setupWatcher();
+  await setupAutoSaveTimers();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -109,6 +110,51 @@ const setupWatcher = async (): Promise<void> => {
       mainWindow.webContents.send("file-missing", filePath);
     }
   });
+};
+
+// Auto-save timers
+const autoSaveTimers = new Map<string, ReturnType<typeof setInterval>>();
+
+const performAutoSave = async (filePath: string): Promise<void> => {
+  try {
+    await fs.access(filePath);
+  } catch {
+    return;
+  }
+
+  const repoPath = getRepoPath(filePath);
+  const targetFilePath = path.join(repoPath, path.basename(filePath));
+  await fs.copyFile(filePath, targetFilePath);
+
+  const git = simpleGit(repoPath);
+  const hasAnyCommits = await git.raw(["rev-parse", "HEAD"]).then(() => true).catch(() => false);
+
+  if (hasAnyCommits) {
+    const status = await git.status();
+    const hasChanges = status.modified.length > 0 || status.created.length > 0 || status.not_added.length > 0;
+    if (!hasChanges) return;
+  }
+
+  await git.add(".");
+  await git.commit("Auto-save");
+};
+
+const setupAutoSaveTimers = async (): Promise<void> => {
+  for (const timer of autoSaveTimers.values()) clearInterval(timer);
+  autoSaveTimers.clear();
+
+  const intervalMinutes: number | null = await getPreferenceValue("autoSaveInterval");
+  if (!intervalMinutes) return;
+
+  const intervalMs = intervalMinutes * 60 * 1000;
+  const trackedFiles = await loadTrackedFiles();
+
+  for (const filePath of trackedFiles) {
+    const timer = setInterval(() => {
+      performAutoSave(filePath).catch(console.error);
+    }, intervalMs);
+    autoSaveTimers.set(filePath, timer);
+  }
 };
 
 const getPreferenceValue = async (key: string): Promise<any> => {
@@ -185,6 +231,14 @@ ipcMain.handle("track-file", async (event, filePath: string) => {
         JSON.stringify(trackedFiles, null, 2),
       );
       watcher?.add(filePath);
+
+      const intervalMinutes: number | null = await getPreferenceValue("autoSaveInterval");
+      if (intervalMinutes) {
+        const timer = setInterval(() => {
+          performAutoSave(filePath).catch(console.error);
+        }, intervalMinutes * 60 * 1000);
+        autoSaveTimers.set(filePath, timer);
+      }
     }
 
     return { success: true };
@@ -329,6 +383,8 @@ ipcMain.handle("remove-tracked-file", async (event, filePath: string) => {
     }
 
     watcher?.unwatch(filePath);
+    const timer = autoSaveTimers.get(filePath);
+    if (timer) { clearInterval(timer); autoSaveTimers.delete(filePath); }
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -348,6 +404,8 @@ ipcMain.handle("delete-file-history", async (event, filePath: string) => {
     }
 
     watcher?.unwatch(filePath);
+    const timer = autoSaveTimers.get(filePath);
+    if (timer) { clearInterval(timer); autoSaveTimers.delete(filePath); }
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -529,6 +587,7 @@ ipcMain.handle("get-preference", async (event, key: string) => {
 ipcMain.handle("set-preference", async (event, key: string, value: any) => {
   try {
     await setPreferenceValue(key, value);
+    if (key === "autoSaveInterval") await setupAutoSaveTimers();
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
