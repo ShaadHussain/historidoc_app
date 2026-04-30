@@ -55,9 +55,9 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
 
             <div className="settings-row">
               <div className="settings-row-text">
-                <div className="settings-row-label">Auto-save interval</div>
+                <div className="settings-row-label">Default auto-save interval for new files</div>
                 <div className="settings-row-desc">
-                  Automatically save a new version if the file has changed since the last save.
+                  When you start tracking a new file, this interval will be applied automatically. You can change it per file in each file's settings.
                 </div>
               </div>
               <select
