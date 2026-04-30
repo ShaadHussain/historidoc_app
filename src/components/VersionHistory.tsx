@@ -315,7 +315,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
                   <div key={version.hash} className="relink-event-card">
                     <div className="relink-event-header">
                       <div className="relink-event-label">
-                        <Link2 size={12} />
+                        <Link2 size={18} />
                         File Relinked
                       </div>
                       <div className="relink-event-date">{formatDate(version.date)}</div>
