@@ -7,6 +7,7 @@ import RelinkDialog from "./RelinkDialog";
 import FileMissingToasts from "./FileMissingToasts";
 import StartFreshPreserveDialog from "./StartFreshPreserveDialog";
 import AppSettings from "./AppSettings";
+import OverlapWarningDialog from "./OverlapWarningDialog";
 import "./App.css";
 
 const App = () => {
@@ -21,6 +22,7 @@ const App = () => {
   const [deprecatedFiles, setDeprecatedFiles] = useState<string[]>([]);
   const [showStartFreshPreserveDialog, setShowStartFreshPreserveDialog] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
+  const [overlapWarning, setOverlapWarning] = useState<{ newPath: string; overlappingPaths: string[] } | null>(null);
   const suppressMovePromptRef = useRef(false);
   const deprecatedFilesRef = useRef<string[]>([]);
 
@@ -213,10 +215,20 @@ const App = () => {
   };
 
   const trackFile = async (filePath: string) => {
+    const normalised = filePath.endsWith('/') ? filePath : filePath + '/';
+    const overlapping = trackedFiles.filter((existing) => {
+      const existingNormalised = existing.endsWith('/') ? existing : existing + '/';
+      return existing !== filePath &&
+        (filePath.startsWith(existingNormalised) || existing.startsWith(normalised));
+    });
+
     const result = await window.electron.trackFile(filePath);
     if (result.success) {
       await loadTrackedFiles();
       setSelectedFile(filePath);
+      if (overlapping.length > 0) {
+        setOverlapWarning({ newPath: filePath, overlappingPaths: overlapping });
+      }
     }
   };
 
@@ -303,6 +315,14 @@ const App = () => {
 
       {showAppSettings && (
         <AppSettings onClose={() => setShowAppSettings(false)} />
+      )}
+
+      {overlapWarning && (
+        <OverlapWarningDialog
+          newPath={overlapWarning.newPath}
+          overlappingPaths={overlapWarning.overlappingPaths}
+          onDismiss={() => setOverlapWarning(null)}
+        />
       )}
     </div>
   );

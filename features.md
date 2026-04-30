@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_110
+Warn when a newly tracked path overlaps with an existing tracked path
+- After successfully tracking a file or folder, check if it is a parent or child of any already-tracked path
+- If overlap found, show an informational dialog listing the conflicting paths
+- Both items remain tracked independently — the dialog is purely a heads-up, no action required
+
 ## FEAT_109
 App-wide settings page
 - Gear icon in the main header opens a settings modal
