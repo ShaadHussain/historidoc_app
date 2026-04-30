@@ -434,6 +434,22 @@ ipcMain.handle(
         JSON.stringify(updated, null, 2),
       );
 
+      // Record the relink in version history
+      const git = simpleGit(newRepoPath);
+      const newFileName = path.basename(newPath);
+      const oldFileName = path.basename(oldPath);
+
+      if (oldFileName !== newFileName) {
+        try { await fs.unlink(path.join(newRepoPath, oldFileName)); } catch {}
+      }
+      await fs.copyFile(newPath, path.join(newRepoPath, newFileName));
+      await git.add(".");
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+      const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+      await git.raw(["commit", "--allow-empty", "-m", `Relinked from ${oldPath} to ${newPath} on ${dateStr} at ${timeStr}`]);
+
       watcher?.unwatch(oldPath);
       watcher?.add(newPath);
 
