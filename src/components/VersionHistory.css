@@ -248,6 +248,82 @@
   color: #4b5563;
 }
 
+.relink-event-card {
+  border-left: 3px solid #06b6d4;
+  border-top: 1px solid rgba(6, 182, 212, 0.2);
+  border-right: 1px solid rgba(6, 182, 212, 0.2);
+  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: rgba(6, 182, 212, 0.04);
+}
+
+.relink-event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.relink-event-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #06b6d4;
+}
+
+.relink-event-date {
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.relink-event-paths {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.relink-path-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.relink-path-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+  flex-shrink: 0;
+  width: 28px;
+}
+
+.relink-path-arrow {
+  color: #06b6d4;
+  flex-shrink: 0;
+}
+
+.relink-path-value {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-family: 'Monaco', 'Courier New', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.relink-path-new {
+  color: #7dd3fc;
+}
+
 .version-card {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(59, 130, 246, 0.3);

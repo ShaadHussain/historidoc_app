@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Settings, ArrowLeft } from 'lucide-react';
+import { Copy, Check, Settings, ArrowLeft, Link2, ArrowRight } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
 import './VersionHistory.css';
@@ -9,6 +9,22 @@ interface VersionHistoryProps {
   onUntrackFile?: (filePath: string) => void;
   onDeleteFile?: (filePath: string) => void;
 }
+
+const parseRelinkMessage = (message: string): { oldPath: string; newPath: string } | null => {
+  const prefix = "Relinked from ";
+  if (!message.startsWith(prefix)) return null;
+  const fullRest = message.slice(prefix.length);
+  // Anchor the date at the end: " on Mon DD, YYYY at HH:MM AM/PM"
+  const dateMatch = fullRest.match(/ on [A-Z][a-z]+ \d+, \d{4} at \d+:\d+ [AP]M$/);
+  const beforeDate = dateMatch ? fullRest.slice(0, dateMatch.index) : fullRest;
+  // Paths on macOS start with /; split on " to /"
+  const toMarkerIdx = beforeDate.indexOf(" to /");
+  if (toMarkerIdx === -1) return null;
+  return {
+    oldPath: beforeDate.slice(0, toMarkerIdx),
+    newPath: beforeDate.slice(toMarkerIdx + " to ".length),
+  };
+};
 
 const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHistoryProps) => {
   const [versions, setVersions] = useState<Version[]>([]);
@@ -292,51 +308,78 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
               <p className="empty-hint">Save your first version above</p>
             </div>
           ) : (
-            versions.map((version) => (
-              <div key={version.hash} className="version-card">
-                <div className="version-header">
-                  <div className="version-number">{version.message}</div>
-                  <div className="version-actions">
-                    <button
-                      className="diff-btn"
-                      onClick={() => handleViewDiff(version)}
-                      disabled={loading}
-                      title="View changes in this version"
-                    >
-                      Diff
-                    </button>
-                    <button
-                      className="export-btn"
-                      onClick={() => handleExport(version.hash, version.message)}
-                      disabled={loading}
-                      title="Export to separate file"
-                    >
-                      Export
-                    </button>
-                    <button
-                      className="restore-btn"
-                      onClick={() => handleRestore(version.hash)}
-                      disabled={loading}
-                    >
-                      Restore
-                    </button>
+            versions.map((version) => {
+              const relinkData = parseRelinkMessage(version.message);
+              if (relinkData) {
+                return (
+                  <div key={version.hash} className="relink-event-card">
+                    <div className="relink-event-header">
+                      <div className="relink-event-label">
+                        <Link2 size={12} />
+                        File Relinked
+                      </div>
+                      <div className="relink-event-date">{formatDate(version.date)}</div>
+                    </div>
+                    <div className="relink-event-paths">
+                      <div className="relink-path-row">
+                        <span className="relink-path-tag">from</span>
+                        <span className="relink-path-value">{relinkData.oldPath}</span>
+                      </div>
+                      <div className="relink-path-row">
+                        <ArrowRight size={12} className="relink-path-arrow" />
+                        <span className="relink-path-value relink-path-new">{relinkData.newPath}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={version.hash} className="version-card">
+                  <div className="version-header">
+                    <div className="version-number">{version.message}</div>
+                    <div className="version-actions">
+                      <button
+                        className="diff-btn"
+                        onClick={() => handleViewDiff(version)}
+                        disabled={loading}
+                        title="View changes in this version"
+                      >
+                        Diff
+                      </button>
+                      <button
+                        className="export-btn"
+                        onClick={() => handleExport(version.hash, version.message)}
+                        disabled={loading}
+                        title="Export to separate file"
+                      >
+                        Export
+                      </button>
+                      <button
+                        className="restore-btn"
+                        onClick={() => handleRestore(version.hash)}
+                        disabled={loading}
+                      >
+                        Restore
+                      </button>
+                    </div>
+                  </div>
+                  <div className="version-meta">
+                    <span className="version-date">{formatDate(version.date)}</span>
+                    <span className="version-hash-container">
+                      <span className="version-hash">{version.hash.substring(0, 7)}</span>
+                      <button
+                        className="copy-hash-btn"
+                        onClick={() => handleCopyHash(version.hash)}
+                        title="Copy full hash"
+                      >
+                        {copiedHash === version.hash ? <Check size={14} strokeWidth={2.5} /> : <Copy size={14} />}
+                      </button>
+                    </span>
                   </div>
                 </div>
-                <div className="version-meta">
-                  <span className="version-date">{formatDate(version.date)}</span>
-                  <span className="version-hash-container">
-                    <span className="version-hash">{version.hash.substring(0, 7)}</span>
-                    <button
-                      className="copy-hash-btn"
-                      onClick={() => handleCopyHash(version.hash)}
-                      title="Copy full hash"
-                    >
-                      {copiedHash === version.hash ? <Check size={14} strokeWidth={2.5} /> : <Copy size={14} />}
-                    </button>
-                  </span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
