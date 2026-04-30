@@ -205,12 +205,14 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
     return (
       <div className="version-history">
         <div className="history-header">
-          <button className="settings-back-btn" onClick={() => setShowSettings(false)} title="Back">
-            <ArrowLeft size={18} />
-          </button>
-          <div>
-            <h2>{getFileName(selectedFile)}</h2>
-            <p className="file-path">{selectedFile}</p>
+          <div className="settings-header-left">
+            <button className="settings-back-btn" onClick={() => setShowSettings(false)} title="Back">
+              <ArrowLeft size={18} />
+            </button>
+            <div>
+              <h2>{getFileName(selectedFile)}</h2>
+              <p className="file-path">{selectedFile}</p>
+            </div>
           </div>
         </div>
 
