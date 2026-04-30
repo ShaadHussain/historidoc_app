@@ -7,9 +7,11 @@ This document outlines the recommended order for rebuilding the app from scratch
 ## Phase 1: Project Foundation & Configuration
 
 ### 1. **package.json**
+
 Start here to define your dependencies and scripts.
 
 **Key dependencies to install:**
+
 ```bash
 npm init -y
 npm install electron react react-dom simple-git
@@ -17,9 +19,11 @@ npm install -D @electron-forge/cli @electron-forge/maker-deb @electron-forge/mak
 ```
 
 ### 2. **tsconfig.json**
+
 Configure TypeScript compiler options before writing any TypeScript code.
 
 ### 3. **.eslintrc.json** (Optional)
+
 Set up linting rules early to maintain code quality from the start.
 
 ---
@@ -27,11 +31,13 @@ Set up linting rules early to maintain code quality from the start.
 ## Phase 2: Type Definitions
 
 ### 4. **src/types.ts**
+
 **Write this FIRST before any implementation files.**
 
 Define all TypeScript interfaces that will be used throughout the app:
 
 **Order of type definitions:**
+
 1. `Version` interface (used by version history)
 2. `ApiResult` interface (used by all IPC handlers)
 3. `ElectronAPI` interface (defines the contract between main and renderer)
@@ -43,18 +49,23 @@ Define all TypeScript interfaces that will be used throughout the app:
 ## Phase 3: Webpack & Build Configuration
 
 ### 5. **webpack.rules.ts**
+
 Define how to process TypeScript, CSS, and other files.
 
 ### 6. **webpack.plugins.ts**
+
 Configure webpack plugins for development.
 
 ### 7. **webpack.main.config.ts**
+
 Configure bundling for the main process.
 
 ### 8. **webpack.renderer.config.ts**
+
 Configure bundling for the renderer process.
 
 ### 9. **forge.config.ts**
+
 Configure Electron Forge with webpack plugins and makers.
 
 **Note:** You can write these in any order, but complete all before trying to run the app.
@@ -64,9 +75,11 @@ Configure Electron Forge with webpack plugins and makers.
 ## Phase 4: Main Process (Backend)
 
 ### 10. **src/index.ts** (Main Process)
+
 This is the heart of your application. Build it in this order:
 
 #### Step 1: Basic Electron Window Setup
+
 ```typescript
 import { app, BrowserWindow } from 'electron';
 
@@ -92,46 +105,49 @@ app.on('activate', () => { ... });
 ```
 
 #### Step 2: Helper Functions (Build These First)
+
 Write utility functions before IPC handlers that use them:
 
-1. **`getAppDataPath()`** - Returns path to the `tracked-files` directory in userData
-2. **`getTrackedFilesPath()`** - Returns path to `tracked.json` (calls `getAppDataPath()`)
-3. **`getRepoPath(filePath)`** - Converts a file path to a unique hashed repo directory path
-4. **`ensureDir(dirPath)`** - Creates directory if it doesn't exist
-5. **`initRepo(filePath)`** - Initializes a git repo for a file (calls `getRepoPath()`, `ensureDir()`)
+1. **`getTrackedFilesPath()`** - Returns path to tracked.json
+2. **`getPreferencesPath()`** - Returns path to preferences.json
+3. **`loadTrackedFiles()`** - Reads tracked.json
+4. **`saveTrackedFiles()`** - Writes to tracked.json
+5. **`loadPreferences()`** - Reads preferences.json
+6. **`savePreferences()`** - Writes to preferences.json
+7. **`getFileRepoPath(filePath)`** - Converts file path to repo directory path
+8. **`ensureDirectoryExists(dirPath)`** - Creates directory if needed
 
 #### Step 3: IPC Handlers (Build in This Order)
 
 **Group 1: File Management (Core Functionality)**
+
 1. **`select-file`** - File picker dialog (simplest, no Git)
 2. **`track-file`** - Initialize Git repo for a file
-   - Uses: `initRepo()`, `getTrackedFilesPath()`, `ensureDir()`, fs read/write
+   - Uses: `getFileRepoPath()`, `ensureDirectoryExists()`, `loadTrackedFiles()`, `saveTrackedFiles()`
 3. **`get-tracked-files`** - Return list of tracked files
-   - Uses: `getTrackedFilesPath()`, fs read
+   - Uses: `loadTrackedFiles()`
 4. **`remove-tracked-file`** - Remove file from tracking
-   - Uses: `getTrackedFilesPath()`, fs read/write
+   - Uses: `loadTrackedFiles()`, `saveTrackedFiles()`
 
-**Group 2: Version Control (Git Operations)**
-5. **`check-file-changes`** - Check if file has changes
-   - Uses: `getRepoPath()`, simple-git
+**Group 2: Version Control (Git Operations)** 5. **`check-file-changes`** - Check if file has changes
+
+- Uses: `getFileRepoPath()`, simple-git
+
 6. **`commit-version`** - Save new version
-   - Uses: `getRepoPath()`, simple-git
+   - Uses: `getFileRepoPath()`, simple-git
 7. **`get-versions`** - Fetch version history
-   - Uses: `getRepoPath()`, simple-git
+   - Uses: `getFileRepoPath()`, simple-git
 8. **`restore-version`** - Restore to previous version
-   - Uses: `getRepoPath()`, simple-git
+   - Uses: `getFileRepoPath()`, simple-git
 9. **`rename-last-version`** - Rename last commit
-   - Uses: `getRepoPath()`, simple-git
+   - Uses: `getFileRepoPath()`, simple-git
 10. **`export-version`** - Export version to file
-    - Uses: `getRepoPath()`, simple-git, dialog
+    - Uses: `getFileRepoPath()`, simple-git, dialog
 
-**Group 3: Preferences (Simple Storage)**
-11. **`get-preference`** - Get preference value
-    - Uses: `getAppDataPath()`, `ensureDir()`, fs read
-12. **`set-preference`** - Set preference value
-    - Uses: `getAppDataPath()`, `ensureDir()`, fs read/write
+**Group 3: Preferences (Simple Storage)** 11. **`get-preference`** - Get preference value - Uses: `loadPreferences()` 12. **`set-preference`** - Set preference value - Uses: `loadPreferences()`, `savePreferences()`
 
 **Why this order?**
+
 - Build from simple to complex
 - File management before Git operations
 - Each handler builds on previously written helpers
@@ -141,11 +157,13 @@ Write utility functions before IPC handlers that use them:
 ## Phase 5: Preload Script (IPC Bridge)
 
 ### 11. **src/preload.ts**
+
 **Must be written AFTER main process IPC handlers are defined.**
 
 Expose IPC methods to renderer via `contextBridge`:
 
 **Order:**
+
 1. Import `contextBridge` and `ipcRenderer`
 2. Define API object matching `ElectronAPI` interface from types.ts
 3. Expose API via `contextBridge.exposeInMainWorld('electron', api)`
@@ -157,6 +175,7 @@ Expose IPC methods to renderer via `contextBridge`:
 ## Phase 6: HTML Entry Point
 
 ### 12. **src/index.html**
+
 Simple HTML shell. Can be written anytime, but needed before renderer.
 
 ```html
@@ -177,6 +196,7 @@ Simple HTML shell. Can be written anytime, but needed before renderer.
 ## Phase 7: Renderer Process (Frontend/React)
 
 ### 13. **src/index.css**
+
 Global styles. Write this before or alongside React components.
 
 ---
@@ -186,9 +206,11 @@ Global styles. Write this before or alongside React components.
 **Build components from bottom-up (leaf components first, then containers).**
 
 ### 14. **src/components/ConfirmDialog.tsx** + **ConfirmDialog.css**
+
 **Start with this - it's the simplest, standalone component.**
 
 **Implementation order:**
+
 1. Define props interface
 2. Basic JSX structure
 3. Event handlers (`onCancel`, `onConfirm`)
@@ -196,6 +218,7 @@ Global styles. Write this before or alongside React components.
 5. Style with CSS
 
 **Why first?**
+
 - No dependencies on other components
 - Doesn't use any IPC calls
 - Pure UI component
@@ -203,9 +226,11 @@ Global styles. Write this before or alongside React components.
 ---
 
 ### 15. **src/components/FileList.tsx** + **FileList.css**
+
 **Second component - simple display component.**
 
 **Implementation order:**
+
 1. Define props interface (`files: string[]`, `selectedFile`, `onSelectFile`)
 2. State for path expansion (`expandedPaths`)
 3. Helper functions:
@@ -216,6 +241,7 @@ Global styles. Write this before or alongside React components.
 5. Style with CSS
 
 **Why second?**
+
 - No IPC calls (just receives data via props)
 - Simple state management
 - No dependencies on other custom components
@@ -223,11 +249,13 @@ Global styles. Write this before or alongside React components.
 ---
 
 ### 16. **src/components/VersionHistory.tsx** + **VersionHistory.css**
+
 **Third component - most complex, uses IPC extensively.**
 
 **Implementation order:**
 
 **Step 1: Props and Basic State**
+
 ```typescript
 interface VersionHistoryProps {
   filePath: string | null;
@@ -235,15 +263,16 @@ interface VersionHistoryProps {
 
 // State hooks
 const [versions, setVersions] = useState<Version[]>([]);
-const [commitMessage, setCommitMessage] = useState('');
+const [commitMessage, setCommitMessage] = useState("");
 const [loading, setLoading] = useState(false);
 const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 const [showRenameDialog, setShowRenameDialog] = useState(false);
-const [renameMessage, setRenameMessage] = useState('');
+const [renameMessage, setRenameMessage] = useState("");
 const [copiedHash, setCopiedHash] = useState<string | null>(null);
 ```
 
 **Step 2: Data Loading Effect**
+
 ```typescript
 useEffect(() => {
   if (filePath) {
@@ -258,6 +287,7 @@ async function loadVersions() {
 ```
 
 **Step 3: Handler Functions (Build in Order)**
+
 1. **`handleCommit()`** - Save new version
    - Check for changes first
    - If no changes, offer rename instead
@@ -274,6 +304,7 @@ async function loadVersions() {
    - Clipboard API, show feedback
 
 **Step 4: JSX Structure**
+
 1. Empty state (no file selected)
 2. Commit section (message input + button)
 3. Versions list with map
@@ -284,6 +315,7 @@ async function loadVersions() {
 Add CSS for layout, buttons, version cards, dialogs
 
 **Why third?**
+
 - Most complex component
 - Uses most IPC calls
 - Needs understanding of Git operations
@@ -292,11 +324,13 @@ Add CSS for layout, buttons, version cards, dialogs
 ---
 
 ### 17. **src/components/App.tsx** + **App.css**
+
 **Fourth (last) component - root container that ties everything together.**
 
 **Implementation order:**
 
 **Step 1: State Setup**
+
 ```typescript
 const [trackedFiles, setTrackedFiles] = useState<string[]>([]);
 const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -306,6 +340,7 @@ const [pendingFilePath, setPendingFilePath] = useState<string | null>(null);
 ```
 
 **Step 2: Load Data on Mount**
+
 ```typescript
 useEffect(() => {
   loadTrackedFiles();
@@ -321,22 +356,27 @@ async function loadTrackedFiles() {
 ```
 
 **Step 3: File Management Functions**
+
 1. **`handleAddFile()`** - Open file picker and track
 2. **`trackFile(filePath)`** - Track file via IPC
 
 **Step 4: Drag-and-Drop Handlers**
+
 1. **`handleDragOver(e)`** - Prevent default, set dragging state
 2. **`handleDragLeave()`** - Clear dragging state
 3. **`handleDrop(e)`** - Extract file, show confirm or auto-track
 
 **Step 5: Dialog Handlers**
+
 1. **`handleConfirm(dontAskAgain)`** - Confirm tracking, save preference
 2. **`handleCancel()`** - Cancel tracking
 
 **Step 6: File Removal Handler**
+
 1. **`handleFileRemoved(filePath)`** - Remove from list, update selection
 
 **Step 7: JSX Structure**
+
 ```tsx
 <div className="app" onDragOver={...} onDrop={...} onDragLeave={...}>
   <div className="sidebar">
@@ -364,6 +404,7 @@ async function loadTrackedFiles() {
 Layout with sidebar + main content, drag overlay styles
 
 **Why last?**
+
 - Depends on all other components
 - Orchestrates entire app
 - Needs all child components to be complete
@@ -371,9 +412,11 @@ Layout with sidebar + main content, drag overlay styles
 ---
 
 ### 18. **src/renderer.tsx**
+
 **Write this LAST in React phase.**
 
 Simple bootstrap code:
+
 ```typescript
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -418,7 +461,9 @@ if (container) {
 ## Files That Must Be Developed Together
 
 ### Pair 1: Component + CSS
+
 Always develop these together:
+
 - **ConfirmDialog.tsx** ↔ **ConfirmDialog.css**
 - **FileList.tsx** ↔ **FileList.css**
 - **VersionHistory.tsx** ↔ **VersionHistory.css**
@@ -427,13 +472,16 @@ Always develop these together:
 **Strategy:** Write component structure, then style incrementally as you add features.
 
 ### Pair 2: Main Process + Preload
+
 - **src/index.ts** (IPC handlers) ↔ **src/preload.ts** (IPC exposure)
 
 **Strategy:**
+
 1. Write all IPC handlers in `index.ts`
 2. Then write `preload.ts` to expose them
 
 ### Pair 3: Types + Everything
+
 - **src/types.ts** is referenced by both main and renderer
 
 **Strategy:** Write types first, but you may need to come back and add types as you discover new needs.
@@ -453,29 +501,36 @@ After completing each phase, you can test:
 ## Pro Tips
 
 ### 1. Incremental Development
+
 Don't try to build everything perfectly. Build the skeleton first:
+
 - Get window opening
 - Get basic UI rendering
 - Add one IPC handler at a time
 - Add features incrementally
 
 ### 2. Start Simple
+
 For first iteration:
+
 - Skip error handling
 - Skip loading states
 - Skip confirmation dialogs
 - Just get core tracking + version listing working
 
 Then add polish:
+
 - Add loading states
 - Add error messages
 - Add confirmations
 - Add rename/export features
 
 ### 3. Use TypeScript Errors as Guide
+
 If you write types.ts first, TypeScript will tell you what's missing as you build.
 
 ### 4. Test IPC Early
+
 After writing `track-file` handler and exposing it in preload, test it immediately from a simple button in App.tsx before building the full UI.
 
 ---
@@ -504,6 +559,7 @@ After writing `track-file` handler and exposing it in preload, test it immediate
 ## Final Checklist
 
 Before considering the app "complete":
+
 - [ ] Window opens and loads React app
 - [ ] Can add files via file picker
 - [ ] Can drag-and-drop files
