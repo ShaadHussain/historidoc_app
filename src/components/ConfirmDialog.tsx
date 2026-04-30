@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import './ConfirmDialog.css';
+import { useState } from "react";
+import "./ConfirmDialog.css";
 
 interface ConfirmDialogProps {
   show: boolean;
@@ -8,7 +8,12 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-const ConfirmDialog = ({ show, fileName, onConfirm, onCancel }: ConfirmDialogProps) => {
+const ConfirmDialog = ({
+  show,
+  fileName,
+  onConfirm,
+  onCancel,
+}: ConfirmDialogProps) => {
   const [dontAskAgain, setDontAskAgain] = useState(false);
 
   const handleConfirm = () => {
