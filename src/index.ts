@@ -143,16 +143,13 @@ const setupAutoSaveTimers = async (): Promise<void> => {
   for (const timer of autoSaveTimers.values()) clearInterval(timer);
   autoSaveTimers.clear();
 
-  const intervalMinutes: number | null = await getPreferenceValue("autoSaveInterval");
-  if (!intervalMinutes) return;
+  const perFileIntervals: Record<string, number | null> = (await getPreferenceValue("autoSaveIntervals")) || {};
 
-  const intervalMs = intervalMinutes * 60 * 1000;
-  const trackedFiles = await loadTrackedFiles();
-
-  for (const filePath of trackedFiles) {
+  for (const [filePath, intervalMinutes] of Object.entries(perFileIntervals)) {
+    if (!intervalMinutes) continue;
     const timer = setInterval(() => {
       performAutoSave(filePath).catch(console.error);
-    }, intervalMs);
+    }, intervalMinutes * 60 * 1000);
     autoSaveTimers.set(filePath, timer);
   }
 };
@@ -232,11 +229,14 @@ ipcMain.handle("track-file", async (event, filePath: string) => {
       );
       watcher?.add(filePath);
 
-      const intervalMinutes: number | null = await getPreferenceValue("autoSaveInterval");
-      if (intervalMinutes) {
+      const defaultInterval: number | null = await getPreferenceValue("autoSaveInterval");
+      const perFileIntervals: Record<string, number | null> = (await getPreferenceValue("autoSaveIntervals")) || {};
+      perFileIntervals[filePath] = defaultInterval;
+      await setPreferenceValue("autoSaveIntervals", perFileIntervals);
+      if (defaultInterval) {
         const timer = setInterval(() => {
           performAutoSave(filePath).catch(console.error);
-        }, intervalMinutes * 60 * 1000);
+        }, defaultInterval * 60 * 1000);
         autoSaveTimers.set(filePath, timer);
       }
     }
@@ -385,6 +385,9 @@ ipcMain.handle("remove-tracked-file", async (event, filePath: string) => {
     watcher?.unwatch(filePath);
     const timer = autoSaveTimers.get(filePath);
     if (timer) { clearInterval(timer); autoSaveTimers.delete(filePath); }
+    const perFileIntervals: Record<string, number | null> = (await getPreferenceValue("autoSaveIntervals")) || {};
+    delete perFileIntervals[filePath];
+    await setPreferenceValue("autoSaveIntervals", perFileIntervals);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -406,6 +409,9 @@ ipcMain.handle("delete-file-history", async (event, filePath: string) => {
     watcher?.unwatch(filePath);
     const timer = autoSaveTimers.get(filePath);
     if (timer) { clearInterval(timer); autoSaveTimers.delete(filePath); }
+    const perFileIntervals: Record<string, number | null> = (await getPreferenceValue("autoSaveIntervals")) || {};
+    delete perFileIntervals[filePath];
+    await setPreferenceValue("autoSaveIntervals", perFileIntervals);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -511,6 +517,19 @@ ipcMain.handle(
       watcher?.unwatch(oldPath);
       watcher?.add(newPath);
 
+      const perFileIntervals: Record<string, number | null> = (await getPreferenceValue("autoSaveIntervals")) || {};
+      const oldInterval = perFileIntervals[oldPath] ?? null;
+      delete perFileIntervals[oldPath];
+      perFileIntervals[newPath] = oldInterval;
+      await setPreferenceValue("autoSaveIntervals", perFileIntervals);
+
+      const oldTimer = autoSaveTimers.get(oldPath);
+      if (oldTimer) { clearInterval(oldTimer); autoSaveTimers.delete(oldPath); }
+      if (oldInterval) {
+        const timer = setInterval(() => { performAutoSave(newPath).catch(console.error); }, oldInterval * 60 * 1000);
+        autoSaveTimers.set(newPath, timer);
+      }
+
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -545,6 +564,17 @@ ipcMain.handle(
       await initRepo(newPath);
       watcher?.unwatch(oldPath);
       watcher?.add(newPath);
+
+      const oldTimer = autoSaveTimers.get(oldPath);
+      if (oldTimer) { clearInterval(oldTimer); autoSaveTimers.delete(oldPath); }
+      const defaultInterval: number | null = await getPreferenceValue("autoSaveInterval");
+      const perFileIntervals: Record<string, number | null> = (await getPreferenceValue("autoSaveIntervals")) || {};
+      perFileIntervals[newPath] = defaultInterval;
+      await setPreferenceValue("autoSaveIntervals", perFileIntervals);
+      if (defaultInterval) {
+        const timer = setInterval(() => { performAutoSave(newPath).catch(console.error); }, defaultInterval * 60 * 1000);
+        autoSaveTimers.set(newPath, timer);
+      }
 
       return { success: true, preserved: !alwaysDelete };
     } catch (error) {
@@ -587,7 +617,7 @@ ipcMain.handle("get-preference", async (event, key: string) => {
 ipcMain.handle("set-preference", async (event, key: string, value: any) => {
   try {
     await setPreferenceValue(key, value);
-    if (key === "autoSaveInterval") await setupAutoSaveTimers();
+    if (key === "autoSaveIntervals") await setupAutoSaveTimers();
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
