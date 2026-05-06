@@ -52,6 +52,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
   const [fileAutoSaveInterval, setFileAutoSaveInterval] = useState<number | null>(null);
 
   useEffect(() => {
+    setCommitError(null);
     if (selectedFile) {
       loadVersions();
     }
