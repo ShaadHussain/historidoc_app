@@ -38,6 +38,7 @@ export interface ElectronAPI {
   getLastVersionContent: (filePath: string) => Promise<{ success: boolean; content: string }>;
   getPreference: (key: string) => Promise<any>;
   setPreference: (key: string, value: any) => Promise<ApiResult>;
+  showInFolder: (filePath: string) => Promise<void>;
 }
 
 declare global {

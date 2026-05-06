@@ -39,4 +39,6 @@ contextBridge.exposeInMainWorld("electron", {
   getPreference: (key: string) => ipcRenderer.invoke("get-preference", key),
   setPreference: (key: string, value: any) =>
     ipcRenderer.invoke("set-preference", key, value),
+  showInFolder: (filePath: string) =>
+    ipcRenderer.invoke("show-in-folder", filePath),
 });

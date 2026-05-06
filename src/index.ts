@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import path from "path";
 import fs from "fs/promises";
 import simpleGit from "simple-git";
@@ -245,6 +245,10 @@ ipcMain.handle("track-file", async (event, filePath: string) => {
   } catch (error) {
     return { success: false, error: (error as Error).message };
   }
+});
+
+ipcMain.handle("show-in-folder", async (event, filePath: string) => {
+  shell.showItemInFolder(filePath);
 });
 
 ipcMain.handle("get-tracked-files", async () => {
