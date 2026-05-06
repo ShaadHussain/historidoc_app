@@ -3,7 +3,7 @@ import './RelinkDialog.css';
 
 interface RelinkDialogProps {
   missingFilePath: string;
-  onRelink: (oldPath: string, newPath: string) => void;
+  onRelink: (oldPath: string, newPath: string) => Promise<{ success: boolean; error?: string }>;
   onStartFresh: (oldPath: string, newPath: string) => void;
   onDismiss: () => void;
   onSuppressMovePrompt: () => void;
@@ -17,6 +17,7 @@ const RelinkDialog = ({ missingFilePath, onRelink, onStartFresh, onDismiss, onSu
   const [previewContent, setPreviewContent] = useState('');
   const [previewLoading, setPreviewLoading] = useState(true);
   const [dontAskAgain, setDontAskAgain] = useState(false);
+  const [relinkError, setRelinkError] = useState<string | null>(null);
 
   useEffect(() => {
     window.electron.getLastVersionContent(missingFilePath).then((result) => {
@@ -27,7 +28,10 @@ const RelinkDialog = ({ missingFilePath, onRelink, onStartFresh, onDismiss, onSu
 
   const handleChooseFile = async () => {
     const filePath = await window.electron.selectFile();
-    if (filePath) setChosenPath(filePath);
+    if (filePath) {
+      setChosenPath(filePath);
+      setRelinkError(null);
+    }
   };
 
   const handleDismiss = () => {
@@ -35,10 +39,13 @@ const RelinkDialog = ({ missingFilePath, onRelink, onStartFresh, onDismiss, onSu
     onDismiss();
   };
 
-  const handleRelink = () => {
+  const handleRelink = async () => {
     if (!chosenPath) return;
     if (dontAskAgain) onSuppressMovePrompt();
-    onRelink(missingFilePath, chosenPath);
+    const result = await onRelink(missingFilePath, chosenPath);
+    if (!result.success && result.error) {
+      setRelinkError(result.error);
+    }
   };
 
   const handleStartFresh = () => {
@@ -107,6 +114,9 @@ const RelinkDialog = ({ missingFilePath, onRelink, onStartFresh, onDismiss, onSu
             Don't ask again when files go missing
           </label>
 
+          {relinkError && (
+            <div className="relink-error">{relinkError}</div>
+          )}
           <div className="relink-actions">
             <button className="relink-dismiss-btn" onClick={handleDismiss}>Dismiss</button>
             {chosenPath && (

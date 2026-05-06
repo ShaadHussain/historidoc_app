@@ -139,8 +139,8 @@ const App = () => {
     setRelinkTargetPath(filePath);
   };
 
-  const handleRelink = async (oldPath: string, newPath: string) => {
-    if (!window.electron) return;
+  const handleRelink = async (oldPath: string, newPath: string): Promise<{ success: boolean; error?: string }> => {
+    if (!window.electron) return { success: false };
     const result = await window.electron.relinkFile(oldPath, newPath);
     if (result.success) {
       setRelinkTargetPath(null);
@@ -149,6 +149,7 @@ const App = () => {
       await loadTrackedFiles();
       setSelectedFile(newPath);
     }
+    return result;
   };
 
   const handleStartFresh = async (oldPath: string, newPath: string) => {

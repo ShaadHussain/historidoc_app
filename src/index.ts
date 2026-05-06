@@ -489,6 +489,21 @@ ipcMain.handle(
     try {
       const oldRepoPath = getRepoPath(oldPath);
       const newRepoPath = getRepoPath(newPath);
+
+      const newStat = await fs.stat(newPath);
+      const newIsDir = newStat.isDirectory();
+      const oldBasename = path.basename(oldPath);
+      const oldGit = simpleGit(oldRepoPath);
+      const hasOldCommits = await oldGit.raw(["rev-parse", "HEAD"]).then(() => true).catch(() => false);
+      if (hasOldCommits) {
+        const oldWasFile = await oldGit.show([`HEAD:${oldBasename}`]).then(() => true).catch(() => false);
+        if ((newIsDir && oldWasFile) || (!newIsDir && !oldWasFile)) {
+          const oldType = oldWasFile ? "file" : "folder";
+          const newType = newIsDir ? "folder" : "file";
+          return { success: false, error: `Cannot relink a ${oldType} to a ${newType}. Please select a ${oldType} instead.` };
+        }
+      }
+
       await fs.rename(oldRepoPath, newRepoPath);
 
       const trackedFiles = await loadTrackedFiles();

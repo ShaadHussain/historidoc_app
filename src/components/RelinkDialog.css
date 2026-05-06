@@ -217,3 +217,13 @@
 .relink-confirm-btn:hover {
   background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
 }
+
+.relink-error {
+  font-size: 0.82rem;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
