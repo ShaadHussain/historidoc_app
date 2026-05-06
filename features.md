@@ -80,3 +80,10 @@ Draggable divider to resize the sidebar/content split
 - Drag the vertical divider between Tracked Files and the version history panel to resize
 - Min width 200px, max 600px
 - Cursor and text-selection locked during drag to prevent jank
+
+## FEAT_113
+"Show in Finder" button for each tracked file
+- FolderOpen icon button in the file path row (same style as copy-path button)
+- Uses Electron shell.showItemInFolder — opens parent folder and selects the file
+- Cross-platform: Finder on macOS, Explorer on Windows, file manager on Linux
+- Only shown for active (non-missing, non-deprecated) files
