@@ -197,7 +197,7 @@ ipcMain.handle("select-file", async () => {
   if (!mainWindow) return null;
 
   const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ["openFile"],
+    properties: ["openFile", "openDirectory"],
   });
 
   if (!result.canceled && result.filePaths.length > 0) {
