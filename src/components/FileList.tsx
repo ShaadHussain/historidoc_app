@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, ChevronUp, ChevronDown, AlertTriangle, FolderOpen } from 'lucide-react';
+import { Copy, Check, ChevronUp, ChevronDown, AlertTriangle } from 'lucide-react';
 import './FileList.css';
 
 interface FileListProps {
@@ -93,19 +93,15 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new
                     <div className="file-path-container">
                       <button
                         className="copy-path-btn"
-                        onClick={(e) => { e.stopPropagation(); window.electron.showInFolder(filePath); }}
-                        title="Show in Finder"
-                      >
-                        <FolderOpen size={14} />
-                      </button>
-                      <button
-                        className="copy-path-btn"
                         onClick={(e) => copyPathToClipboard(filePath, e)}
                         title="Copy full path"
                       >
                         {copiedPath === filePath ? <Check size={14} strokeWidth={2.5} /> : <Copy size={14} />}
                       </button>
-                      <div className={`file-path ${isExpanded ? 'expanded' : ''}`}>
+                      <div
+                        className={`file-path ${isExpanded ? 'expanded' : ''}`}
+                        onDoubleClick={(e) => { if (!isExpanded) togglePathExpansion(filePath, e); }}
+                      >
                         {filePath}
                       </div>
                       <button

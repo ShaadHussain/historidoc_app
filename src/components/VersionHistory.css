@@ -15,6 +15,12 @@
   gap: 0.25rem;
 }
 
+.history-header-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
 .settings-header-left {
   display: flex;
   align-items: flex-start;

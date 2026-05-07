@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
 import './VersionHistory.css';
@@ -326,9 +326,14 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
           <h2>{getFileName(selectedFile)}</h2>
           <p className="file-path">{selectedFile}</p>
         </div>
-        <button className="settings-btn" onClick={() => setShowSettings(true)} title="File settings">
-          <Settings size={18} />
-        </button>
+        <div className="history-header-actions">
+          <button className="settings-btn" onClick={() => window.electron.showInFolder(selectedFile)} title="Show in Finder">
+            <FolderOpen size={18} />
+          </button>
+          <button className="settings-btn" onClick={() => setShowSettings(true)} title="File settings">
+            <Settings size={18} />
+          </button>
+        </div>
       </div>
 
       <div className="commit-section">
