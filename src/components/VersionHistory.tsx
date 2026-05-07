@@ -8,6 +8,7 @@ interface VersionHistoryProps {
   selectedFile: string | null;
   onUntrackFile?: (filePath: string) => void;
   onDeleteFile?: (filePath: string) => void;
+  isArchived?: boolean;
 }
 
 const AUTO_SAVE_OPTIONS = [
@@ -34,7 +35,7 @@ const parseRelinkMessage = (message: string): { oldPath: string; newPath: string
   };
 };
 
-const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHistoryProps) => {
+const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived = false }: VersionHistoryProps) => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [commitMessage, setCommitMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -332,19 +333,27 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile }: VersionHi
 
       <div className="commit-section">
         <h3>Save New Version</h3>
-        <div className="commit-form">
-          <input
-            type="text"
-            placeholder="Version message (optional - defaults to V1, V2, etc.)"
-            value={commitMessage}
-            onChange={(e) => setCommitMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-          />
-          <button className="commit-btn" onClick={handleCommit} disabled={loading}>
-            {loading ? 'Saving...' : 'Save Version'}
-          </button>
-        </div>
-        {commitError && <div className="commit-error">{commitError}</div>}
+        {isArchived ? (
+          <div className="archived-save-notice">
+            This history is archived. New versions cannot be saved to it.
+          </div>
+        ) : (
+          <>
+            <div className="commit-form">
+              <input
+                type="text"
+                placeholder="Version message (optional - defaults to V1, V2, etc.)"
+                value={commitMessage}
+                onChange={(e) => setCommitMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              <button className="commit-btn" onClick={handleCommit} disabled={loading}>
+                {loading ? 'Saving...' : 'Save Version'}
+              </button>
+            </div>
+            {commitError && <div className="commit-error">{commitError}</div>}
+          </>
+        )}
       </div>
 
       <div className="versions-section">

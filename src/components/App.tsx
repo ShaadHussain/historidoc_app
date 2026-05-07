@@ -311,6 +311,7 @@ const App = () => {
           selectedFile={selectedFile}
           onUntrackFile={handleRemoveFile}
           onDeleteFile={handleDeleteFile}
+          isArchived={!!selectedFile && deprecatedFiles.includes(selectedFile)}
         />
       </div>
 
