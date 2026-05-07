@@ -76,8 +76,8 @@ const App = () => {
     e.preventDefault();
   };
 
-  const loadTrackedFiles = async () => {
-    if (!window.electron) return;
+  const loadTrackedFiles = async (): Promise<string[]> => {
+    if (!window.electron) return [];
     const files = await window.electron.getTrackedFiles();
     setTrackedFiles(files);
     if (files.length > 0 && !selectedFile) {
@@ -91,6 +91,7 @@ const App = () => {
     const activeFiles = files.filter((f) => !deprecated.includes(f));
     const missing = await window.electron.checkMissingFiles(activeFiles);
     setMissingFiles(new Set(missing));
+    return files;
   };
 
   const handleAddFile = async () => {
@@ -111,9 +112,10 @@ const App = () => {
 
     const result = await window.electron.removeTrackedFile(filePath);
     if (result.success) {
-      await loadTrackedFiles();
+      const fresh = await loadTrackedFiles();
       if (selectedFile === filePath) {
-        setSelectedFile(trackedFiles.length > 0 ? trackedFiles[0] : null);
+        const remaining = fresh.filter((f) => f !== filePath);
+        setSelectedFile(remaining.length > 0 ? remaining[0] : null);
       }
     }
   };
@@ -123,9 +125,10 @@ const App = () => {
 
     const result = await window.electron.deleteFileHistory(filePath);
     if (result.success) {
-      await loadTrackedFiles();
+      const fresh = await loadTrackedFiles();
       if (selectedFile === filePath) {
-        setSelectedFile(trackedFiles.length > 0 ? trackedFiles[0] : null);
+        const remaining = fresh.filter((f) => f !== filePath);
+        setSelectedFile(remaining.length > 0 ? remaining[0] : null);
       }
     }
   };
