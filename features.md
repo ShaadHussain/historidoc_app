@@ -1,9 +1,15 @@
 # Features
 
+## FEAT_117
+24-hour time format option
+- Toggle in the Timestamps section of App Settings
+- When enabled, timestamps show as 14:30 instead of 2:30 PM
+- Applies to version history display and all export formats (text/markdown/csv)
+
 ## FEAT_116
-Keyboard shortcut to open settings
-- Cmd+, on macOS, Ctrl+, on Windows and Linux
-- Toggles the settings modal open/closed
+Keyboard shortcuts for settings modal
+- Cmd+, on macOS, Ctrl+, on Windows and Linux to toggle open/closed
+- Escape to close
 - Settings button tooltip shows the platform-appropriate shortcut hint
 
 ## FEAT_115
