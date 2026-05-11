@@ -52,6 +52,13 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [expandedRelinkHashes, setExpandedRelinkHashes] = useState<Set<string>>(new Set());
   const [fileAutoSaveInterval, setFileAutoSaveInterval] = useState<number | null>(null);
   const [exportingHistory, setExportingHistory] = useState(false);
+  const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
+
+  useEffect(() => {
+    window.electron.getPreference("timezoneDisplay").then((val: string | null) => {
+      setTimezoneDisplay(val || 'system');
+    });
+  }, []);
 
   useEffect(() => {
     setCommitError(null);
@@ -184,7 +191,18 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleString();
+    const tz = timezoneDisplay === 'system'
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : timezoneDisplay;
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: tz,
+      timeZoneName: 'short',
+    }).format(date);
   };
 
   const getFileName = (filePath: string): string => {
