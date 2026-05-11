@@ -14,9 +14,20 @@ const AUTO_SAVE_OPTIONS = [
   { label: 'Every 2 hours', value: 120 },
 ];
 
+const currentSystemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+const getTzAbbr = (ianaTimezone: string): string => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: ianaTimezone,
+    timeZoneName: 'short',
+  }).formatToParts(new Date());
+  return parts.find(p => p.type === 'timeZoneName')?.value || ianaTimezone;
+};
+
 const AppSettings = ({ onClose }: AppSettingsProps) => {
   const [alwaysDeleteOnStartFresh, setAlwaysDeleteOnStartFresh] = useState(false);
   const [autoSaveInterval, setAutoSaveInterval] = useState<number | null>(null);
+  const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
 
   useEffect(() => {
     window.electron.getPreference("alwaysDeleteOnStartFresh").then((val) => {
@@ -25,12 +36,26 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
     window.electron.getPreference("autoSaveInterval").then((val) => {
       setAutoSaveInterval(val ?? null);
     });
+    window.electron.getPreference("timezoneDisplay").then((val: string | null) => {
+      setTimezoneDisplay(val || 'system');
+    });
   }, []);
 
   const handleAlwaysDeleteToggle = async (checked: boolean) => {
     setAlwaysDeleteOnStartFresh(checked);
     await window.electron.setPreference("alwaysDeleteOnStartFresh", checked);
   };
+
+  const handleTimezoneChange = async (value: string) => {
+    setTimezoneDisplay(value);
+    await window.electron.setPreference("timezoneDisplay", value);
+  };
+
+  const frozenTz = timezoneDisplay !== 'system' && timezoneDisplay !== 'UTC' ? timezoneDisplay : null;
+  const freezeOptionValue = frozenTz || currentSystemTz;
+  const freezeOptionLabel = frozenTz
+    ? `Fixed: ${getTzAbbr(frozenTz)}`
+    : `Freeze to current timezone`;
 
   const handleAutoSaveChange = async (value: string) => {
     const parsed = value === 'null' ? null : parseInt(value, 10);
@@ -70,6 +95,30 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
                     {opt.label}
                   </option>
                 ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <div className="settings-section-title">Timestamps</div>
+
+            <div className="settings-row">
+              <div className="settings-row-text">
+                <div className="settings-row-label">Timezone for version dates</div>
+                <div className="settings-row-desc">
+                  {timezoneDisplay === 'system' && 'Dates use your system clock and change if you travel.'}
+                  {timezoneDisplay === 'UTC' && 'All dates are displayed in UTC.'}
+                  {frozenTz && `Dates are pinned to ${frozenTz} (${getTzAbbr(frozenTz)}).`}
+                </div>
+              </div>
+              <select
+                className="settings-select"
+                value={timezoneDisplay}
+                onChange={(e) => handleTimezoneChange(e.target.value)}
+              >
+                <option value="system">System timezone (auto)</option>
+                <option value="UTC">UTC</option>
+                <option value={freezeOptionValue}>{freezeOptionLabel}</option>
               </select>
             </div>
           </div>
