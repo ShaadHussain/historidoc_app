@@ -1,5 +1,15 @@
 # Features
 
+## FEAT_115
+Timezone-aware version date display with user control
+- All version dates now show the timezone abbreviation (e.g. "May 10, 2026, 2:30 PM PDT")
+- New "Timestamps" section in App Settings with three options:
+  - System timezone (auto): follows OS clock, changes if you travel (default)
+  - UTC: all dates shown in UTC
+  - Freeze to current timezone: saves your current IANA timezone at selection time so dates stay pinned even if the system timezone changes
+- Frozen timezone shown as "Fixed: [abbr]" in the dropdown and explained in the description
+- Exports (text/markdown/csv) respect the same timezone preference
+
 ## FEAT_114
 Export full version history from file settings
 - "Export History" section in file settings (between Auto-Save and Danger Zone)
