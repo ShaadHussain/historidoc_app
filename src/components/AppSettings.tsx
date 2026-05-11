@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, HelpCircle } from 'lucide-react';
 import './AppSettings.css';
 
 interface AppSettingsProps {
@@ -104,7 +104,16 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
 
             <div className="settings-row">
               <div className="settings-row-text">
-                <div className="settings-row-label">Timezone for version dates</div>
+                <div className="settings-row-label">
+                  Timezone for version dates
+                  <span className="tz-help-icon">
+                    <HelpCircle size={13} />
+                    <div className="tz-help-tooltip">
+                      <div className="tz-help-tooltip-title">How does Historidoc know my timezone?</div>
+                      It reads the timezone already set on your Mac, the same one used by your system clock. No location tracking, no geolocation, no network requests.
+                    </div>
+                  </span>
+                </div>
                 <div className="settings-row-desc">
                   {timezoneDisplay === 'system' && 'Dates use your system clock and change if you travel.'}
                   {timezoneDisplay === 'UTC' && 'All dates are displayed in UTC.'}
