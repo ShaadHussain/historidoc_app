@@ -653,9 +653,12 @@ ipcMain.handle(
       const tz = tzPref === "system"
         ? Intl.DateTimeFormat().resolvedOptions().timeZone
         : tzPref;
+      const use24Hour: boolean = !!(await getPreferenceValue("use24HourTime"));
       const fmt = new Intl.DateTimeFormat('en-US', {
         year: 'numeric', month: 'short', day: 'numeric',
-        hour: 'numeric', minute: '2-digit',
+        hour: use24Hour ? '2-digit' : 'numeric',
+        minute: '2-digit',
+        hour12: use24Hour ? false : undefined,
         timeZone: tz, timeZoneName: 'short',
       });
       const fmtDate = (d: string) => fmt.format(new Date(d));
