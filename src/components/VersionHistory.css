@@ -102,6 +102,34 @@
   border-color: rgba(59, 130, 246, 0.5);
 }
 
+.export-history-buttons {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.export-history-btn {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.export-history-btn:hover:not(:disabled) {
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #e2e8f0;
+}
+
+.export-history-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .settings-view {
   padding: 1.5rem 2rem;
   flex: 1;

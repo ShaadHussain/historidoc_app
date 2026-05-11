@@ -51,6 +51,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [diffLoading, setDiffLoading] = useState(false);
   const [expandedRelinkHashes, setExpandedRelinkHashes] = useState<Set<string>>(new Set());
   const [fileAutoSaveInterval, setFileAutoSaveInterval] = useState<number | null>(null);
+  const [exportingHistory, setExportingHistory] = useState(false);
 
   useEffect(() => {
     setCommitError(null);
@@ -66,6 +67,16 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
       });
     }
   }, [showSettings, selectedFile]);
+
+  const handleExportHistory = async (format: "text" | "markdown" | "csv") => {
+    if (!window.electron || !selectedFile) return;
+    setExportingHistory(true);
+    const result = await window.electron.exportVersionHistory(selectedFile, format);
+    if (!result.success && result.error !== "Export cancelled") {
+      alert("Failed to export history: " + result.error);
+    }
+    setExportingHistory(false);
+  };
 
   const handleFileAutoSaveChange = async (value: string) => {
     if (!selectedFile) return;
@@ -263,6 +274,42 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="file-settings-section">
+            <div className="file-settings-section-title">Export History</div>
+            <div className="file-settings-row">
+              <div className="file-settings-row-text">
+                <div className="file-settings-row-label">Export full version history</div>
+                <div className="file-settings-row-desc">Download a log of all versions for this file.</div>
+              </div>
+              <div className="export-history-buttons">
+                <button
+                  className="export-history-btn"
+                  onClick={() => handleExportHistory("text")}
+                  disabled={exportingHistory}
+                  title="Export as plain text"
+                >
+                  Text
+                </button>
+                <button
+                  className="export-history-btn"
+                  onClick={() => handleExportHistory("markdown")}
+                  disabled={exportingHistory}
+                  title="Export as Markdown table"
+                >
+                  Markdown
+                </button>
+                <button
+                  className="export-history-btn"
+                  onClick={() => handleExportHistory("csv")}
+                  disabled={exportingHistory}
+                  title="Export as CSV"
+                >
+                  CSV
+                </button>
+              </div>
             </div>
           </div>
 
