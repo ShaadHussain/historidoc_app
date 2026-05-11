@@ -28,6 +28,7 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
   const [alwaysDeleteOnStartFresh, setAlwaysDeleteOnStartFresh] = useState(false);
   const [autoSaveInterval, setAutoSaveInterval] = useState<number | null>(null);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
+  const [use24Hour, setUse24Hour] = useState(false);
 
   useEffect(() => {
     window.electron.getPreference("alwaysDeleteOnStartFresh").then((val) => {
@@ -39,6 +40,9 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
     window.electron.getPreference("timezoneDisplay").then((val: string | null) => {
       setTimezoneDisplay(val || 'system');
     });
+    window.electron.getPreference("use24HourTime").then((val) => {
+      setUse24Hour(!!val);
+    });
   }, []);
 
   const handleAlwaysDeleteToggle = async (checked: boolean) => {
@@ -49,6 +53,11 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
   const handleTimezoneChange = async (value: string) => {
     setTimezoneDisplay(value);
     await window.electron.setPreference("timezoneDisplay", value);
+  };
+
+  const handleUse24HourToggle = async (checked: boolean) => {
+    setUse24Hour(checked);
+    await window.electron.setPreference("use24HourTime", checked);
   };
 
   const frozenTz = timezoneDisplay !== 'system' && timezoneDisplay !== 'UTC' ? timezoneDisplay : null;
@@ -129,6 +138,21 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
                 <option value="UTC">UTC</option>
                 <option value={freezeOptionValue}>{freezeOptionLabel}</option>
               </select>
+            </div>
+
+            <div className="settings-row" style={{ marginTop: '1rem' }}>
+              <div className="settings-row-text">
+                <div className="settings-row-label">Use 24-hour time</div>
+                <div className="settings-row-desc">Show timestamps in 24-hour format (e.g. 14:30) instead of 12-hour (e.g. 2:30 PM).</div>
+              </div>
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={use24Hour}
+                  onChange={(e) => handleUse24HourToggle(e.target.checked)}
+                />
+                <span className="settings-toggle-slider" />
+              </label>
             </div>
           </div>
 
