@@ -46,6 +46,13 @@ const App = () => {
       }
     });
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault();
+        setShowAppSettings((prev) => !prev);
+      }
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizingRef.current) return;
       const delta = e.clientX - resizeStartXRef.current;
@@ -59,9 +66,11 @@ const App = () => {
       document.body.style.userSelect = '';
     };
 
+    document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     return () => {
+      document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -289,7 +298,7 @@ const App = () => {
               Folders can be tracked too — ideal for whole-project snapshots. For line-by-line change history, track individual files instead.
             </div>
           </div>
-          <button className="header-settings-btn" onClick={() => setShowAppSettings(true)} title="App settings">
+          <button className="header-settings-btn" onClick={() => setShowAppSettings(true)} title={`App settings (${navigator.platform.startsWith('Mac') ? '⌘' : 'Ctrl+'},)`}>
             <Settings size={17} />
           </button>
           <button className="add-file-btn" onClick={handleAddFile}>
