@@ -51,6 +51,9 @@ const App = () => {
         e.preventDefault();
         setShowAppSettings((prev) => !prev);
       }
+      if (e.key === 'Escape') {
+        setShowAppSettings(false);
+      }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
