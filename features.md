@@ -1,5 +1,15 @@
 # Features
 
+## FEAT_114
+Export full version history from file settings
+- "Export History" section in file settings (between Auto-Save and Danger Zone)
+- Three format buttons: Text, Markdown, CSV
+- Text: numbered list with version name, date, hash, author per entry
+- Markdown: table with # / Version / Date / Hash / Author columns
+- CSV: comma-separated with same columns, values properly escaped
+- Native save dialog with suggested filename ({name}_version_history.{ext})
+- Buttons disabled while export in progress; errors surfaced via alert
+
 ## FEAT_110
 Warn when a newly tracked path overlaps with an existing tracked path
 - After successfully tracking a file or folder, check if it is a parent or child of any already-tracked path
