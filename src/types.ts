@@ -39,6 +39,7 @@ export interface ElectronAPI {
   getPreference: (key: string) => Promise<any>;
   setPreference: (key: string, value: any) => Promise<ApiResult>;
   showInFolder: (filePath: string) => Promise<void>;
+  exportVersionHistory: (filePath: string, format: "text" | "markdown" | "csv") => Promise<ApiResult>;
 }
 
 declare global {

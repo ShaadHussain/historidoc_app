@@ -629,6 +629,96 @@ ipcMain.handle("check-missing-files", async (event, filePaths: string[]) => {
   return missing;
 });
 
+ipcMain.handle(
+  "export-version-history",
+  async (event, filePath: string, format: "text" | "markdown" | "csv") => {
+    try {
+      if (!mainWindow) return { success: false, error: "No main window" };
+
+      const repoPath = getRepoPath(filePath);
+      const git = simpleGit(repoPath);
+      const log = await git.log();
+      const versions = log.all.map((commit) => ({
+        hash: commit.hash,
+        message: commit.message,
+        date: commit.date,
+        author: commit.author_name,
+      }));
+
+      const fileName = path.basename(filePath);
+      const nameWithoutExt = path.parse(filePath).name;
+      const dir = path.parse(filePath).dir;
+      const exportedAt = new Date().toLocaleString();
+
+      let content: string;
+      let ext: string;
+
+      if (format === "text") {
+        ext = "txt";
+        const lines = [
+          `Version History: ${fileName}`,
+          `Exported: ${exportedAt}`,
+          `Total versions: ${versions.length}`,
+          "",
+        ];
+        versions.forEach((v, i) => {
+          lines.push(`---`);
+          lines.push(`#${versions.length - i}  ${v.message}`);
+          lines.push(`Date:   ${new Date(v.date).toLocaleString()}`);
+          lines.push(`Hash:   ${v.hash}`);
+          lines.push(`Author: ${v.author}`);
+          lines.push("");
+        });
+        content = lines.join("\n");
+      } else if (format === "markdown") {
+        ext = "md";
+        const rows = versions
+          .map((v, i) =>
+            `| ${versions.length - i} | ${v.message.replace(/\|/g, "\\|")} | ${new Date(v.date).toLocaleString()} | \`${v.hash.substring(0, 7)}\` | ${v.author} |`
+          )
+          .join("\n");
+        content = [
+          `# Version History: ${fileName}`,
+          ``,
+          `*Exported: ${exportedAt} — ${versions.length} version${versions.length !== 1 ? "s" : ""}*`,
+          ``,
+          `| # | Version | Date | Hash | Author |`,
+          `|---|---------|------|------|--------|`,
+          rows,
+        ].join("\n");
+      } else {
+        ext = "csv";
+        const escape = (s: string) => `"${s.replace(/"/g, '""')}"`;
+        const rows = versions.map((v, i) =>
+          [
+            String(versions.length - i),
+            escape(v.message),
+            escape(new Date(v.date).toLocaleString()),
+            v.hash,
+            escape(v.author),
+          ].join(",")
+        );
+        content = ["#,Version,Date,Hash,Author", ...rows].join("\n");
+      }
+
+      const suggestedName = `${nameWithoutExt}_version_history.${ext}`;
+      const result = await dialog.showSaveDialog(mainWindow, {
+        defaultPath: path.join(dir, suggestedName),
+        filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
+      });
+
+      if (!result.canceled && result.filePath) {
+        await fs.writeFile(result.filePath, content, "utf-8");
+        return { success: true, path: result.filePath };
+      }
+
+      return { success: false, error: "Export cancelled" };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  },
+);
+
 ipcMain.handle("get-preference", async (event, key: string) => {
   return getPreferenceValue(key);
 });
