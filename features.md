@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_116
+Keyboard shortcut to open settings
+- Cmd+, on macOS, Ctrl+, on Windows and Linux
+- Toggles the settings modal open/closed
+- Settings button tooltip shows the platform-appropriate shortcut hint
+
 ## FEAT_115
 Timezone-aware version date display with user control
 - All version dates now show the timezone abbreviation (e.g. "May 10, 2026, 2:30 PM PDT")
