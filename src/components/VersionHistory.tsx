@@ -53,10 +53,14 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [fileAutoSaveInterval, setFileAutoSaveInterval] = useState<number | null>(null);
   const [exportingHistory, setExportingHistory] = useState(false);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
+  const [use24Hour, setUse24Hour] = useState(false);
 
   useEffect(() => {
     window.electron.getPreference("timezoneDisplay").then((val: string | null) => {
       setTimezoneDisplay(val || 'system');
+    });
+    window.electron.getPreference("use24HourTime").then((val) => {
+      setUse24Hour(!!val);
     });
   }, []);
 
@@ -198,8 +202,9 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-      hour: 'numeric',
+      hour: use24Hour ? '2-digit' : 'numeric',
       minute: '2-digit',
+      hour12: use24Hour ? false : undefined,
       timeZone: tz,
       timeZoneName: 'short',
     }).format(date);
