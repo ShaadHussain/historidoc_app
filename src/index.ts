@@ -648,7 +648,18 @@ ipcMain.handle(
       const fileName = path.basename(filePath);
       const nameWithoutExt = path.parse(filePath).name;
       const dir = path.parse(filePath).dir;
-      const exportedAt = new Date().toLocaleString();
+
+      const tzPref: string = (await getPreferenceValue("timezoneDisplay")) || "system";
+      const tz = tzPref === "system"
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : tzPref;
+      const fmt = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+        timeZone: tz, timeZoneName: 'short',
+      });
+      const fmtDate = (d: string) => fmt.format(new Date(d));
+      const exportedAt = fmt.format(new Date());
 
       let content: string;
       let ext: string;
@@ -664,7 +675,7 @@ ipcMain.handle(
         versions.forEach((v, i) => {
           lines.push(`---`);
           lines.push(`#${versions.length - i}  ${v.message}`);
-          lines.push(`Date:   ${new Date(v.date).toLocaleString()}`);
+          lines.push(`Date:   ${fmtDate(v.date)}`);
           lines.push(`Hash:   ${v.hash}`);
           lines.push(`Author: ${v.author}`);
           lines.push("");
@@ -674,7 +685,7 @@ ipcMain.handle(
         ext = "md";
         const rows = versions
           .map((v, i) =>
-            `| ${versions.length - i} | ${v.message.replace(/\|/g, "\\|")} | ${new Date(v.date).toLocaleString()} | \`${v.hash.substring(0, 7)}\` | ${v.author} |`
+            `| ${versions.length - i} | ${v.message.replace(/\|/g, "\\|")} | ${fmtDate(v.date)} | \`${v.hash.substring(0, 7)}\` | ${v.author} |`
           )
           .join("\n");
         content = [
@@ -693,7 +704,7 @@ ipcMain.handle(
           [
             String(versions.length - i),
             escape(v.message),
-            escape(new Date(v.date).toLocaleString()),
+            escape(fmtDate(v.date)),
             v.hash,
             escape(v.author),
           ].join(",")
