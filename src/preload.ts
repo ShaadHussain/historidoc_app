@@ -43,4 +43,6 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("show-in-folder", filePath),
   exportVersionHistory: (filePath: string, format: "text" | "markdown" | "csv") =>
     ipcRenderer.invoke("export-version-history", filePath, format),
+  isPathDirectory: (filePath: string) =>
+    ipcRenderer.invoke("is-path-directory", filePath),
 });

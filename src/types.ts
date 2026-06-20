@@ -40,6 +40,7 @@ export interface ElectronAPI {
   setPreference: (key: string, value: any) => Promise<ApiResult>;
   showInFolder: (filePath: string) => Promise<void>;
   exportVersionHistory: (filePath: string, format: "text" | "markdown" | "csv") => Promise<ApiResult>;
+  isPathDirectory: (filePath: string) => Promise<boolean>;
 }
 
 declare global {

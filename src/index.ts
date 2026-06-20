@@ -627,6 +627,15 @@ ipcMain.handle(
   },
 );
 
+ipcMain.handle("is-path-directory", async (event, filePath: string) => {
+  try {
+    const stat = await fs.stat(filePath);
+    return stat.isDirectory();
+  } catch {
+    return false;
+  }
+});
+
 ipcMain.handle("check-missing-files", async (event, filePaths: string[]) => {
   const missing: string[] = [];
   for (const filePath of filePaths) {
