@@ -8,6 +8,7 @@ import FileMissingToasts from "./FileMissingToasts";
 import StartFreshPreserveDialog from "./StartFreshPreserveDialog";
 import AppSettings from "./AppSettings";
 import OverlapWarningDialog from "./OverlapWarningDialog";
+import FolderWarningDialog from "./FolderWarningDialog";
 import "./App.css";
 
 const App = () => {
@@ -23,6 +24,7 @@ const App = () => {
   const [showStartFreshPreserveDialog, setShowStartFreshPreserveDialog] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
   const [overlapWarning, setOverlapWarning] = useState<{ newPath: string; overlappingPaths: string[] } | null>(null);
+  const [folderWarningPath, setFolderWarningPath] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(350);
   const suppressMovePromptRef = useRef(false);
   const deprecatedFilesRef = useRef<string[]>([]);
@@ -106,16 +108,54 @@ const App = () => {
     return files;
   };
 
+  const trackFile = async (filePath: string) => {
+    const normalised = filePath.endsWith('/') ? filePath : filePath + '/';
+    const overlapping = trackedFiles.filter((existing) => {
+      const existingNormalised = existing.endsWith('/') ? existing : existing + '/';
+      return existing !== filePath &&
+        (filePath.startsWith(existingNormalised) || existing.startsWith(normalised));
+    });
+
+    const result = await window.electron.trackFile(filePath);
+    if (result.success) {
+      await loadTrackedFiles();
+      setSelectedFile(filePath);
+      if (overlapping.length > 0) {
+        setOverlapWarning({ newPath: filePath, overlappingPaths: overlapping });
+      }
+    }
+  };
+
+  const maybeShowFolderWarning = async (filePath: string) => {
+    const isDir = await window.electron.isPathDirectory(filePath);
+    if (!isDir) {
+      await trackFile(filePath);
+      return;
+    }
+    const skip = await window.electron.getPreference("skipFolderWarning");
+    if (skip) {
+      await trackFile(filePath);
+      return;
+    }
+    setFolderWarningPath(filePath);
+  };
+
+  const handleFolderWarningConfirm = async (dontAskAgain: boolean) => {
+    if (dontAskAgain) {
+      await window.electron.setPreference("skipFolderWarning", true);
+    }
+    if (folderWarningPath) {
+      await trackFile(folderWarningPath);
+    }
+    setFolderWarningPath(null);
+  };
+
   const handleAddFile = async () => {
     if (!window.electron) return;
 
     const filePath = await window.electron.selectFile();
     if (filePath) {
-      const result = await window.electron.trackFile(filePath);
-      if (result.success) {
-        await loadTrackedFiles();
-        setSelectedFile(filePath);
-      }
+      await maybeShowFolderWarning(filePath);
     }
   };
 
@@ -234,6 +274,12 @@ const App = () => {
         return;
       }
 
+      const isDir = await window.electron.isPathDirectory(filePath);
+      if (isDir) {
+        await maybeShowFolderWarning(filePath);
+        return;
+      }
+
       setPendingFilePath(filePath);
 
       const autoConfirm =
@@ -263,23 +309,6 @@ const App = () => {
     setShowConfirmDialog(false);
   };
 
-  const trackFile = async (filePath: string) => {
-    const normalised = filePath.endsWith('/') ? filePath : filePath + '/';
-    const overlapping = trackedFiles.filter((existing) => {
-      const existingNormalised = existing.endsWith('/') ? existing : existing + '/';
-      return existing !== filePath &&
-        (filePath.startsWith(existingNormalised) || existing.startsWith(normalised));
-    });
-
-    const result = await window.electron.trackFile(filePath);
-    if (result.success) {
-      await loadTrackedFiles();
-      setSelectedFile(filePath);
-      if (overlapping.length > 0) {
-        setOverlapWarning({ newPath: filePath, overlappingPaths: overlapping });
-      }
-    }
-  };
 
   const getFileName = (path: string): string => {
     return path.split("/").pop() || path.split("\\").pop() || path;
@@ -293,7 +322,7 @@ const App = () => {
       onDrop={handleDrop}
     >
       <div className="header">
-        <h1>Version Tracker</h1>
+        <h1>Historidoc</h1>
         <div className="header-actions">
           <div className="info-tooltip-wrapper">
             <Info className="info-icon" size={18} />
@@ -375,6 +404,14 @@ const App = () => {
           newPath={overlapWarning.newPath}
           overlappingPaths={overlapWarning.overlappingPaths}
           onDismiss={() => setOverlapWarning(null)}
+        />
+      )}
+
+      {folderWarningPath && (
+        <FolderWarningDialog
+          folderPath={folderWarningPath}
+          onConfirm={handleFolderWarningConfirm}
+          onCancel={() => setFolderWarningPath(null)}
         />
       )}
     </div>
