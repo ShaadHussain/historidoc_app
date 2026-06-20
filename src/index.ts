@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell, Menu } from "electron";
 import path from "path";
 import fs from "fs/promises";
 import simpleGit from "simple-git";
@@ -79,6 +79,16 @@ const ensureDir = async (dirPath: string): Promise<void> => {
   }
 };
 
+const copyToRepo = async (sourcePath: string, targetPath: string): Promise<void> => {
+  const stat = await fs.stat(sourcePath);
+  if (stat.isDirectory()) {
+    try { await fs.rm(targetPath, { recursive: true, force: true }); } catch {}
+    await fs.cp(sourcePath, targetPath, { recursive: true });
+  } else {
+    await fs.copyFile(sourcePath, targetPath);
+  }
+};
+
 const getRepoPath = (filePath: string): string => {
   const fileHash = Buffer.from(filePath)
     .toString("base64")
@@ -124,7 +134,7 @@ const performAutoSave = async (filePath: string): Promise<void> => {
 
   const repoPath = getRepoPath(filePath);
   const targetFilePath = path.join(repoPath, path.basename(filePath));
-  await fs.copyFile(filePath, targetFilePath);
+  await copyToRepo(filePath, targetFilePath);
 
   const git = simpleGit(repoPath);
   const hasAnyCommits = await git.raw(["rev-parse", "HEAD"]).then(() => true).catch(() => false);
@@ -268,7 +278,7 @@ ipcMain.handle("check-file-changes", async (event, filePath: string) => {
 
   const repoPath = getRepoPath(filePath);
   const targetFilePath = path.join(repoPath, path.basename(filePath));
-  await fs.copyFile(filePath, targetFilePath);
+  await copyToRepo(filePath, targetFilePath);
 
   const git = simpleGit(repoPath);
 
@@ -296,7 +306,7 @@ ipcMain.handle(
       const repoPath = getRepoPath(filePath);
       const targetFilePath = path.join(repoPath, path.basename(filePath));
 
-      await fs.copyFile(filePath, targetFilePath);
+      await copyToRepo(filePath, targetFilePath);
 
       const git = simpleGit(repoPath);
       await git.add(".");
@@ -523,9 +533,9 @@ ipcMain.handle(
       const oldFileName = path.basename(oldPath);
 
       if (oldFileName !== newFileName) {
-        try { await fs.unlink(path.join(newRepoPath, oldFileName)); } catch {}
+        try { await fs.rm(path.join(newRepoPath, oldFileName), { recursive: true, force: true }); } catch {}
       }
-      await fs.copyFile(newPath, path.join(newRepoPath, newFileName));
+      await copyToRepo(newPath, path.join(newRepoPath, newFileName));
       await git.add(".");
 
       const now = new Date();
