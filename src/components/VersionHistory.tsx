@@ -66,6 +66,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
 
   useEffect(() => {
     setCommitError(null);
+    setShowSettings(false);
     if (selectedFile) {
       loadVersions();
     }
