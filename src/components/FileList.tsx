@@ -1,6 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Copy, Check, ChevronUp, ChevronDown, AlertTriangle } from 'lucide-react';
-import { useScrollBounce } from '../hooks/useScrollBounce';
 import './FileList.css';
 
 interface FileListProps {
@@ -15,8 +14,44 @@ interface FileListProps {
 const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new Set(), onRelink, deprecatedFiles = [] }: FileListProps) => {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
-  const filesRef = useRef<HTMLDivElement>(null);
-  useScrollBounce(filesRef);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    const scroll = scrollRef.current;
+    if (!panel || !scroll) return;
+
+    let accumulated = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const onWheel = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = scroll;
+      const atTop = scrollTop <= 0 && e.deltaY < 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0;
+
+      if (atTop || atBottom) {
+        e.preventDefault();
+        accumulated += e.deltaY;
+        accumulated = Math.max(-80, Math.min(80, accumulated));
+        scroll.style.transition = 'none';
+        scroll.style.transform = `translateY(${-accumulated * 0.2}px)`;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          scroll.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          scroll.style.transform = '';
+          accumulated = 0;
+        }, 80);
+      } else if (accumulated !== 0) {
+        scroll.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        scroll.style.transform = '';
+        accumulated = 0;
+      }
+    };
+
+    panel.addEventListener('wheel', onWheel, { passive: false });
+    return () => { panel.removeEventListener('wheel', onWheel); clearTimeout(timer); };
+  }, []);
 
   const getFileName = (filePath: string): string => {
     return filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
@@ -53,13 +88,13 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new
   };
 
   return (
-    <div className="file-list">
+    <div className="file-list" ref={panelRef}>
       <div className="file-list-header">
         <h2>Tracked Files</h2>
         <div className="file-count">{trackedFiles.length}</div>
       </div>
 
-      <div className="files" ref={filesRef}>
+      <div className="files" ref={scrollRef}>
         {trackedFiles.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📁</div>

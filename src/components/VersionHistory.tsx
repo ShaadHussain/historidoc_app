@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
-import { useScrollBounce } from '../hooks/useScrollBounce';
 import './VersionHistory.css';
 
 interface VersionHistoryProps {
@@ -55,8 +54,45 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [exportingHistory, setExportingHistory] = useState(false);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
   const [use24Hour, setUse24Hour] = useState(false);
-  const versionsListRef = useRef<HTMLDivElement>(null);
-  useScrollBounce(versionsListRef);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showSettings) return;
+    const panel = panelRef.current;
+    const scroll = scrollRef.current;
+    if (!panel || !scroll) return;
+
+    let accumulated = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const onWheel = (e: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = scroll;
+      const atTop = scrollTop <= 0 && e.deltaY < 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0;
+
+      if (atTop || atBottom) {
+        e.preventDefault();
+        accumulated += e.deltaY;
+        accumulated = Math.max(-80, Math.min(80, accumulated));
+        scroll.style.transition = 'none';
+        scroll.style.transform = `translateY(${-accumulated * 0.2}px)`;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          scroll.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          scroll.style.transform = '';
+          accumulated = 0;
+        }, 80);
+      } else if (accumulated !== 0) {
+        scroll.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        scroll.style.transform = '';
+        accumulated = 0;
+      }
+    };
+
+    panel.addEventListener('wheel', onWheel, { passive: false });
+    return () => { panel.removeEventListener('wheel', onWheel); clearTimeout(timer); };
+  }, [showSettings]);
 
   useEffect(() => {
     window.electron.getPreference("timezoneDisplay").then((val: string | null) => {
@@ -394,7 +430,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   }
 
   return (
-    <div className="version-history">
+    <div className="version-history" ref={panelRef}>
       <div className="history-header">
         <div>
           <h2>{getFileName(selectedFile)}</h2>
@@ -437,7 +473,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
 
       <div className="versions-section">
         <h3>Version History</h3>
-        <div className="versions-list" ref={versionsListRef}>
+        <div className="versions-list" ref={scrollRef}>
           {loading && versions.length === 0 ? (
             <div className="loading">Loading versions...</div>
           ) : versions.length === 0 ? (
