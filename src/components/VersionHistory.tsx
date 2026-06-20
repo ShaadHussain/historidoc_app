@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
+import { useScrollBounce } from '../hooks/useScrollBounce';
 import './VersionHistory.css';
 
 interface VersionHistoryProps {
@@ -54,6 +55,8 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [exportingHistory, setExportingHistory] = useState(false);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
   const [use24Hour, setUse24Hour] = useState(false);
+  const versionsListRef = useRef<HTMLDivElement>(null);
+  useScrollBounce(versionsListRef);
 
   useEffect(() => {
     window.electron.getPreference("timezoneDisplay").then((val: string | null) => {
@@ -434,7 +437,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
 
       <div className="versions-section">
         <h3>Version History</h3>
-        <div className="versions-list">
+        <div className="versions-list" ref={versionsListRef}>
           {loading && versions.length === 0 ? (
             <div className="loading">Loading versions...</div>
           ) : versions.length === 0 ? (

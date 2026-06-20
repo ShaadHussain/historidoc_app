@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Copy, Check, ChevronUp, ChevronDown, AlertTriangle } from 'lucide-react';
+import { useScrollBounce } from '../hooks/useScrollBounce';
 import './FileList.css';
 
 interface FileListProps {
@@ -14,6 +15,8 @@ interface FileListProps {
 const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new Set(), onRelink, deprecatedFiles = [] }: FileListProps) => {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const filesRef = useRef<HTMLDivElement>(null);
+  useScrollBounce(filesRef);
 
   const getFileName = (filePath: string): string => {
     return filePath.split('/').pop() || filePath.split('\\').pop() || filePath;
@@ -56,7 +59,7 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new
         <div className="file-count">{trackedFiles.length}</div>
       </div>
 
-      <div className="files">
+      <div className="files" ref={filesRef}>
         {trackedFiles.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📁</div>
