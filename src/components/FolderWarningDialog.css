@@ -1,0 +1,35 @@
+.folder-warning-dialog {
+  max-width: 540px;
+}
+
+.folder-warning-intro {
+  margin: 0 0 0.75rem 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.folder-warning-list {
+  margin: 0 0 1rem 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.folder-warning-list li {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.warning-label {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.folder-warning-note {
+  margin: 0 0 1rem 0;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-style: italic;
+}
