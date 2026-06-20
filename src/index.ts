@@ -372,11 +372,22 @@ ipcMain.handle(
     try {
       const repoPath = getRepoPath(filePath);
       const git = simpleGit(repoPath);
-
       const fileName = path.basename(filePath);
-      const fileContent = await git.show([`${commitHash}:${fileName}`]);
 
-      await fs.writeFile(filePath, fileContent);
+      const objectType = (await git.raw(["cat-file", "-t", `${commitHash}:${fileName}`])).trim();
+
+      if (objectType === "tree") {
+        // Check out that commit's tree into the repo working directory
+        await git.raw(["checkout", commitHash, "--", "."]);
+        // Copy the folder from repo to original path
+        try { await fs.rm(filePath, { recursive: true, force: true }); } catch {}
+        await fs.cp(path.join(repoPath, fileName), filePath, { recursive: true });
+        // Restore repo working directory back to HEAD
+        await git.raw(["checkout", "HEAD", "--", "."]);
+      } else {
+        const fileContent = await git.show([`${commitHash}:${fileName}`]);
+        await fs.writeFile(filePath, fileContent);
+      }
 
       return { success: true };
     } catch (error) {

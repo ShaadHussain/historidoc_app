@@ -29,9 +29,6 @@ const FolderWarningDialog = ({ folderPath, onConfirm, onCancel }: FolderWarningD
           </p>
           <ul className="folder-warning-list">
             <li>
-              <span className="warning-label">No restore</span> — Restoring a folder to a previous version is not supported. Only individual files can be restored.
-            </li>
-            <li>
               <span className="warning-label">No export</span> — Exporting a specific folder version to disk is not supported.
             </li>
             <li>
