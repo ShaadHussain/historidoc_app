@@ -16,6 +16,7 @@
 }
 
 .tm-modal {
+  position: relative;
   background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
   border: 1px solid rgba(59, 130, 246, 0.35);
   border-radius: 14px;
@@ -29,6 +30,26 @@
 @keyframes tmSlideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* Close button */
+.tm-close-btn {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.tm-close-btn:hover {
+  color: #94a3b8;
 }
 
 /* Dots */

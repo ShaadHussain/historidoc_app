@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, RotateCcw, FileOutput, Timer, FolderOpen } from 'lucide-react';
+import { Save, RotateCcw, FileOutput, Timer, FolderOpen, X } from 'lucide-react';
 import './TutorialModal.css';
 
 interface TutorialModalProps {
@@ -92,6 +92,7 @@ const TutorialModal = ({ onClose }: TutorialModalProps) => {
   return (
     <div className="tm-overlay">
       <div className="tm-modal">
+        <button className="tm-close-btn" onClick={onClose} aria-label="Close"><X size={16} /></button>
         <div className="tm-dots">
           {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
             <button
