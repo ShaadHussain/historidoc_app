@@ -5,6 +5,7 @@ import './AppSettings.css';
 interface AppSettingsProps {
   onClose: () => void;
   onOpenGuide: () => void;
+  onOpenSlides: () => void;
 }
 
 const AUTO_SAVE_OPTIONS = [
@@ -25,7 +26,7 @@ const getTzAbbr = (ianaTimezone: string): string => {
   return parts.find(p => p.type === 'timeZoneName')?.value || ianaTimezone;
 };
 
-const AppSettings = ({ onClose, onOpenGuide }: AppSettingsProps) => {
+const AppSettings = ({ onClose, onOpenGuide, onOpenSlides }: AppSettingsProps) => {
   const [alwaysDeleteOnStartFresh, setAlwaysDeleteOnStartFresh] = useState(false);
   const [autoSaveInterval, setAutoSaveInterval] = useState<number | null>(null);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
@@ -211,10 +212,17 @@ const AppSettings = ({ onClose, onOpenGuide }: AppSettingsProps) => {
             <div className="settings-section-title">Help</div>
             <div className="settings-row">
               <div className="settings-row-text">
-                <div className="settings-row-label">Getting Started Guide</div>
-                <div className="settings-row-desc">A plain-language reference covering saving, restoring, exporting, auto-save, and folders.</div>
+                <div className="settings-row-label">Tutorial</div>
+                <div className="settings-row-desc">Replay the quick intro slides shown when you first opened Historidoc.</div>
               </div>
-              <button className="settings-guide-btn" onClick={onOpenGuide}>View Guide</button>
+              <button className="settings-guide-btn" onClick={onOpenSlides}>View Slides</button>
+            </div>
+            <div className="settings-row" style={{ marginTop: '1rem' }}>
+              <div className="settings-row-text">
+                <div className="settings-row-label">Getting Started Guide</div>
+                <div className="settings-row-desc">A plain-language reference covering every feature — saving, restoring, exporting, auto-save, and folders.</div>
+              </div>
+              <button className="settings-guide-btn" onClick={onOpenGuide}>Read Manual</button>
             </div>
           </div>
         </div>

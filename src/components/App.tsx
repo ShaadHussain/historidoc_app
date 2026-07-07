@@ -417,6 +417,7 @@ const App = () => {
         <AppSettings
           onClose={() => { setShowAppSettings(false); loadDisplayPreferences(); }}
           onOpenGuide={() => setShowTutorialGuide(true)}
+          onOpenSlides={() => setShowTutorialModal(true)}
         />
       )}
 
