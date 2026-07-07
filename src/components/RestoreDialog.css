@@ -140,6 +140,41 @@
   color: #475569;
 }
 
+.restore-dialog-footer {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.restore-save-pref-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  cursor: pointer;
+  user-select: none;
+}
+
+.restore-save-pref-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.restore-save-pref-label:hover {
+  color: #cbd5e1;
+}
+
+.restore-save-pref-hint {
+  font-size: 0.75rem;
+  color: #475569;
+  padding-left: 22px;
+}
+
 .restore-dialog-actions {
   display: flex;
   gap: 0.75rem;

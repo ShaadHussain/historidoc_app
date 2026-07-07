@@ -194,21 +194,35 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
     setRenameMessage('');
   };
 
-  const handleRestore = (version: Version) => {
-    setRestoreDialogVersion(version);
+  const handleRestore = async (version: Version) => {
+    if (!window.electron) return;
+    const savedMode = await window.electron.getPreference('restoreMode') as 'reset' | 'commit' | null;
+    if (savedMode === 'reset' || savedMode === 'commit') {
+      await executeRestore(version, savedMode, savedMode === 'commit' ? `Restored to ${version.message}` : '');
+    } else {
+      setRestoreDialogVersion(version);
+    }
   };
 
-  const handleRestoreConfirm = async (mode: 'reset' | 'commit', commitMessage: string) => {
-    if (!window.electron || !selectedFile || !restoreDialogVersion) return;
-    setRestoreDialogVersion(null);
+  const executeRestore = async (version: Version, mode: 'reset' | 'commit', commitMessage: string) => {
+    if (!window.electron || !selectedFile) return;
     setLoading(true);
-    const result = await window.electron.restoreVersion(selectedFile, restoreDialogVersion.hash, mode, commitMessage);
+    const result = await window.electron.restoreVersion(selectedFile, version.hash, mode, commitMessage);
     if (result.success) {
       await loadVersions();
     } else {
       alert('Failed to restore version: ' + result.error);
     }
     setLoading(false);
+  };
+
+  const handleRestoreConfirm = async (mode: 'reset' | 'commit', commitMessage: string, savePreference: boolean) => {
+    if (!restoreDialogVersion) return;
+    if (savePreference) {
+      await window.electron.setPreference('restoreMode', mode);
+    }
+    setRestoreDialogVersion(null);
+    await executeRestore(restoreDialogVersion, mode, commitMessage);
   };
 
   const handleExport = async (commitHash: string, versionMessage: string) => {

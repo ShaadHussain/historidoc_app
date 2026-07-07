@@ -29,6 +29,7 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
   const [autoSaveInterval, setAutoSaveInterval] = useState<number | null>(null);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
   const [use24Hour, setUse24Hour] = useState(false);
+  const [restoreMode, setRestoreMode] = useState<'reset' | 'commit' | 'ask'>('ask');
 
   useEffect(() => {
     window.electron.getPreference("alwaysDeleteOnStartFresh").then((val) => {
@@ -43,7 +44,16 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
     window.electron.getPreference("use24HourTime").then((val) => {
       setUse24Hour(!!val);
     });
+    window.electron.getPreference("restoreMode").then((val: string | null) => {
+      setRestoreMode((val as 'reset' | 'commit') || 'ask');
+    });
   }, []);
+
+  const handleRestoreModeChange = async (value: string) => {
+    const mode = value as 'reset' | 'commit' | 'ask';
+    setRestoreMode(mode);
+    await window.electron.setPreference("restoreMode", mode === 'ask' ? null : mode);
+  };
 
   const handleAlwaysDeleteToggle = async (checked: boolean) => {
     setAlwaysDeleteOnStartFresh(checked);
@@ -160,6 +170,24 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
             <div className="settings-section-title">File History</div>
 
             <div className="settings-row">
+              <div className="settings-row-text">
+                <div className="settings-row-label">Default restore action</div>
+                <div className="settings-row-desc">
+                  Choose what happens when you click Restore on a version. "Always ask" shows the dialog each time.
+                </div>
+              </div>
+              <select
+                className="settings-select"
+                value={restoreMode}
+                onChange={(e) => handleRestoreModeChange(e.target.value)}
+              >
+                <option value="ask">Always ask</option>
+                <option value="reset">Remove future versions</option>
+                <option value="commit">Restore as new version</option>
+              </select>
+            </div>
+
+            <div className="settings-row" style={{ marginTop: '1rem' }}>
               <div className="settings-row-text">
                 <div className="settings-row-label">Always delete old file history after "Start Fresh"</div>
                 <div className="settings-row-desc">

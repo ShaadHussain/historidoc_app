@@ -3,24 +3,26 @@ import './RestoreDialog.css';
 
 interface RestoreDialogProps {
   versionMessage: string;
-  onConfirm: (mode: 'reset' | 'commit', commitMessage: string) => void;
+  onConfirm: (mode: 'reset' | 'commit', commitMessage: string, savePreference: boolean) => void;
   onCancel: () => void;
 }
 
 const RestoreDialog = ({ versionMessage, onConfirm, onCancel }: RestoreDialogProps) => {
   const [mode, setMode] = useState<'reset' | 'commit'>('reset');
   const [commitMessage, setCommitMessage] = useState('');
+  const [savePreference, setSavePreference] = useState(false);
 
   useEffect(() => {
     setMode('reset');
     setCommitMessage('');
+    setSavePreference(false);
   }, [versionMessage]);
 
   const handleConfirm = () => {
     const message = mode === 'commit'
       ? (commitMessage.trim() || `Restored to ${versionMessage}`)
       : '';
-    onConfirm(mode, message);
+    onConfirm(mode, message, savePreference);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -75,6 +77,20 @@ const RestoreDialog = ({ versionMessage, onConfirm, onCancel }: RestoreDialogPro
               )}
             </div>
           </label>
+        </div>
+
+        <div className="restore-dialog-footer">
+          <label className="restore-save-pref-label">
+            <input
+              type="checkbox"
+              checked={savePreference}
+              onChange={(e) => setSavePreference(e.target.checked)}
+            />
+            Remember my choice
+          </label>
+          {savePreference && (
+            <div className="restore-save-pref-hint">You can change this anytime in Settings (⌘,)</div>
+          )}
         </div>
 
         <div className="restore-dialog-actions">
