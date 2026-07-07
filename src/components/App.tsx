@@ -9,6 +9,8 @@ import StartFreshPreserveDialog from "./StartFreshPreserveDialog";
 import AppSettings from "./AppSettings";
 import OverlapWarningDialog from "./OverlapWarningDialog";
 import FolderWarningDialog from "./FolderWarningDialog";
+import TutorialModal from "./TutorialModal";
+import TutorialGuide from "./TutorialGuide";
 import "./App.css";
 
 const App = () => {
@@ -23,6 +25,8 @@ const App = () => {
   const [deprecatedFiles, setDeprecatedFiles] = useState<string[]>([]);
   const [showStartFreshPreserveDialog, setShowStartFreshPreserveDialog] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
+  const [showTutorialModal, setShowTutorialModal] = useState(false);
+  const [showTutorialGuide, setShowTutorialGuide] = useState(false);
   const [use24Hour, setUse24Hour] = useState(false);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
   const [overlapWarning, setOverlapWarning] = useState<{ newPath: string; overlappingPaths: string[] } | null>(null);
@@ -45,6 +49,10 @@ const App = () => {
 
     window.electron.getPreference("suppressMovePrompt").then((val) => {
       suppressMovePromptRef.current = !!val;
+    });
+
+    window.electron.getPreference("tutorialSeen").then((val) => {
+      if (!val) setShowTutorialModal(true);
     });
 
     window.electron.onFileMissing((filePath) => {
@@ -406,7 +414,21 @@ const App = () => {
       )}
 
       {showAppSettings && (
-        <AppSettings onClose={() => { setShowAppSettings(false); loadDisplayPreferences(); }} />
+        <AppSettings
+          onClose={() => { setShowAppSettings(false); loadDisplayPreferences(); }}
+          onOpenGuide={() => setShowTutorialGuide(true)}
+        />
+      )}
+
+      {showTutorialModal && (
+        <TutorialModal onClose={() => {
+          window.electron.setPreference("tutorialSeen", true);
+          setShowTutorialModal(false);
+        }} />
+      )}
+
+      {showTutorialGuide && (
+        <TutorialGuide onClose={() => setShowTutorialGuide(false)} />
       )}
 
       {overlapWarning && (

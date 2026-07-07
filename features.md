@@ -1,5 +1,14 @@
 # Features
 
+## FEAT_119
+Tutorial modal and getting started guide
+- First-launch sliding modal (3 slides): welcome/analogy, Save/Restore/Export, Auto-save/Folders
+- Slide dots for navigation, fade transition between slides, "Got it" marks tutorial as seen
+- Last slide notes that the guide is accessible in Settings
+- Full text reference guide modal: plain-language sections covering every core feature
+- "Getting Started Guide" button added to App Settings → Help section
+- tutorialSeen preference prevents modal from showing again after first dismissal
+
 ## FEAT_118
 Restore version dialog with two modes
 - "Remove future versions": hard-resets git history to the selected commit, deleting any newer versions

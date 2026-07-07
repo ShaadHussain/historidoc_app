@@ -4,6 +4,7 @@ import './AppSettings.css';
 
 interface AppSettingsProps {
   onClose: () => void;
+  onOpenGuide: () => void;
 }
 
 const AUTO_SAVE_OPTIONS = [
@@ -24,7 +25,7 @@ const getTzAbbr = (ianaTimezone: string): string => {
   return parts.find(p => p.type === 'timeZoneName')?.value || ianaTimezone;
 };
 
-const AppSettings = ({ onClose }: AppSettingsProps) => {
+const AppSettings = ({ onClose, onOpenGuide }: AppSettingsProps) => {
   const [alwaysDeleteOnStartFresh, setAlwaysDeleteOnStartFresh] = useState(false);
   const [autoSaveInterval, setAutoSaveInterval] = useState<number | null>(null);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
@@ -203,6 +204,17 @@ const AppSettings = ({ onClose }: AppSettingsProps) => {
                 />
                 <span className="settings-toggle-slider" />
               </label>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <div className="settings-section-title">Help</div>
+            <div className="settings-row">
+              <div className="settings-row-text">
+                <div className="settings-row-label">Getting Started Guide</div>
+                <div className="settings-row-desc">A plain-language reference covering saving, restoring, exporting, auto-save, and folders.</div>
+              </div>
+              <button className="settings-guide-btn" onClick={onOpenGuide}>View Guide</button>
             </div>
           </div>
         </div>

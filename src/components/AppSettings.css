@@ -200,3 +200,21 @@
 .tz-help-icon:hover .tz-help-tooltip {
   display: block;
 }
+
+.settings-guide-btn {
+  background: none;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 6px;
+  color: #60a5fa;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.settings-guide-btn:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}

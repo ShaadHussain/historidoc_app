@@ -1,0 +1,151 @@
+.tg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1300;
+  animation: tgFadeIn 0.18s ease;
+}
+
+@keyframes tgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tg-modal {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 560px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  animation: tgSlideUp 0.18s ease;
+}
+
+@keyframes tgSlideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.tg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+}
+
+.tg-header-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.tg-close-btn {
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.tg-close-btn:hover {
+  color: #94a3b8;
+}
+
+.tg-body {
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tg-section {
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tg-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.tg-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #3b82f6;
+  margin: 0 0 0.75rem 0;
+}
+
+.tg-section p {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  line-height: 1.7;
+  margin: 0 0 0.65rem 0;
+}
+
+.tg-section p:last-child {
+  margin-bottom: 0;
+}
+
+.tg-section strong {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.tg-section em {
+  color: #93c5fd;
+  font-style: normal;
+}
+
+.tg-tip {
+  background: rgba(59, 130, 246, 0.07);
+  border-left: 3px solid rgba(59, 130, 246, 0.4);
+  border-radius: 0 6px 6px 0;
+  padding: 0.6rem 0.9rem !important;
+  color: #7dd3fc !important;
+}
+
+.tg-list {
+  margin: 0.5rem 0 0.65rem 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.tg-list li {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  line-height: 1.65;
+  position: relative;
+  padding-left: 0.75rem;
+}
+
+.tg-list li::before {
+  content: '–';
+  position: absolute;
+  left: -0.5rem;
+  color: #334155;
+}
+
+.tg-list li strong {
+  color: #cbd5e1;
+}
