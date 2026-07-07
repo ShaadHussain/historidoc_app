@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
+import RestoreDialog from './RestoreDialog';
 import './VersionHistory.css';
 
 interface VersionHistoryProps {
@@ -9,6 +10,8 @@ interface VersionHistoryProps {
   onUntrackFile?: (filePath: string) => void;
   onDeleteFile?: (filePath: string) => void;
   isArchived?: boolean;
+  use24Hour?: boolean;
+  timezoneDisplay?: string;
 }
 
 const AUTO_SAVE_OPTIONS = [
@@ -35,7 +38,7 @@ const parseRelinkMessage = (message: string): { oldPath: string; newPath: string
   };
 };
 
-const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived = false }: VersionHistoryProps) => {
+const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived = false, use24Hour = false, timezoneDisplay = 'system' }: VersionHistoryProps) => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [commitMessage, setCommitMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,13 +50,12 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [commitError, setCommitError] = useState<string | null>(null);
   const [diffVersion, setDiffVersion] = useState<Version | null>(null);
+  const [restoreDialogVersion, setRestoreDialogVersion] = useState<Version | null>(null);
   const [diffContent, setDiffContent] = useState('');
   const [diffLoading, setDiffLoading] = useState(false);
   const [expandedRelinkHashes, setExpandedRelinkHashes] = useState<Set<string>>(new Set());
   const [fileAutoSaveInterval, setFileAutoSaveInterval] = useState<number | null>(null);
   const [exportingHistory, setExportingHistory] = useState(false);
-  const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
-  const [use24Hour, setUse24Hour] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -94,14 +96,6 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
     return () => { panel.removeEventListener('wheel', onWheel); clearTimeout(timer); };
   }, [showSettings]);
 
-  useEffect(() => {
-    window.electron.getPreference("timezoneDisplay").then((val: string | null) => {
-      setTimezoneDisplay(val || 'system');
-    });
-    window.electron.getPreference("use24HourTime").then((val) => {
-      setUse24Hour(!!val);
-    });
-  }, []);
 
   useEffect(() => {
     setCommitError(null);
@@ -200,17 +194,17 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
     setRenameMessage('');
   };
 
-  const handleRestore = async (commitHash: string) => {
-    if (!window.electron || !selectedFile) return;
+  const handleRestore = (version: Version) => {
+    setRestoreDialogVersion(version);
+  };
 
-    const confirmed = confirm('Are you sure you want to restore this version? This will overwrite the current file.');
-    if (!confirmed) return;
-
+  const handleRestoreConfirm = async (mode: 'reset' | 'commit', commitMessage: string) => {
+    if (!window.electron || !selectedFile || !restoreDialogVersion) return;
+    setRestoreDialogVersion(null);
     setLoading(true);
-    const result = await window.electron.restoreVersion(selectedFile, commitHash);
-
+    const result = await window.electron.restoreVersion(selectedFile, restoreDialogVersion.hash, mode, commitMessage);
     if (result.success) {
-      alert('Version restored successfully!');
+      await loadVersions();
     } else {
       alert('Failed to restore version: ' + result.error);
     }
@@ -542,7 +536,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
                       </button>
                       <button
                         className="restore-btn"
-                        onClick={() => handleRestore(version.hash)}
+                        onClick={() => handleRestore(version)}
                         disabled={loading}
                       >
                         Restore
@@ -568,6 +562,14 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
           )}
         </div>
       </div>
+
+      {restoreDialogVersion && (
+        <RestoreDialog
+          versionMessage={restoreDialogVersion.message}
+          onConfirm={handleRestoreConfirm}
+          onCancel={() => setRestoreDialogVersion(null)}
+        />
+      )}
 
       {diffVersion && (
         <DiffViewer

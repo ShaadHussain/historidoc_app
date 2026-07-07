@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_118
+Restore version dialog with two modes
+- "Remove future versions": hard-resets git history to the selected commit, deleting any newer versions
+- "Restore as new version": keeps full history and creates a new commit on top with the restored content
+- Custom commit message input when using "Restore as new version" mode (defaults to "Restored to [version name]")
+
 ## FEAT_117
 24-hour time format option
 - Toggle in the Timestamps section of App Settings

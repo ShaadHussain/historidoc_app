@@ -368,7 +368,7 @@ ipcMain.handle("get-versions", async (event, filePath: string) => {
 
 ipcMain.handle(
   "restore-version",
-  async (event, filePath: string, commitHash: string) => {
+  async (event, filePath: string, commitHash: string, mode: 'reset' | 'commit', commitMessage?: string) => {
     try {
       const repoPath = getRepoPath(filePath);
       const git = simpleGit(repoPath);
@@ -377,16 +377,21 @@ ipcMain.handle(
       const objectType = (await git.raw(["cat-file", "-t", `${commitHash}:${fileName}`])).trim();
 
       if (objectType === "tree") {
-        // Check out that commit's tree into the repo working directory
         await git.raw(["checkout", commitHash, "--", "."]);
-        // Copy the folder from repo to original path
         try { await fs.rm(filePath, { recursive: true, force: true }); } catch {}
         await fs.cp(path.join(repoPath, fileName), filePath, { recursive: true });
-        // Restore repo working directory back to HEAD
-        await git.raw(["checkout", "HEAD", "--", "."]);
       } else {
         const fileContent = await git.show([`${commitHash}:${fileName}`]);
         await fs.writeFile(filePath, fileContent);
+      }
+
+      if (mode === 'reset') {
+        await git.raw(["reset", "--hard", commitHash]);
+      } else {
+        const targetFilePath = path.join(repoPath, fileName);
+        await copyToRepo(filePath, targetFilePath);
+        await git.add(".");
+        await git.commit(commitMessage || `Restored to ${commitHash.slice(0, 7)}`);
       }
 
       return { success: true };

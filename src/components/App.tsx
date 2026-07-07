@@ -23,6 +23,8 @@ const App = () => {
   const [deprecatedFiles, setDeprecatedFiles] = useState<string[]>([]);
   const [showStartFreshPreserveDialog, setShowStartFreshPreserveDialog] = useState(false);
   const [showAppSettings, setShowAppSettings] = useState(false);
+  const [use24Hour, setUse24Hour] = useState(false);
+  const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
   const [overlapWarning, setOverlapWarning] = useState<{ newPath: string; overlappingPaths: string[] } | null>(null);
   const [folderWarningPath, setFolderWarningPath] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(350);
@@ -32,8 +34,14 @@ const App = () => {
   const resizeStartXRef = useRef(0);
   const resizeStartWidthRef = useRef(0);
 
+  const loadDisplayPreferences = () => {
+    window.electron.getPreference("use24HourTime").then((val) => setUse24Hour(!!val));
+    window.electron.getPreference("timezoneDisplay").then((val: string | null) => setTimezoneDisplay(val || 'system'));
+  };
+
   useEffect(() => {
     loadTrackedFiles();
+    loadDisplayPreferences();
 
     window.electron.getPreference("suppressMovePrompt").then((val) => {
       suppressMovePromptRef.current = !!val;
@@ -356,6 +364,8 @@ const App = () => {
           onUntrackFile={handleRemoveFile}
           onDeleteFile={handleDeleteFile}
           isArchived={!!selectedFile && deprecatedFiles.includes(selectedFile)}
+          use24Hour={use24Hour}
+          timezoneDisplay={timezoneDisplay}
         />
       </div>
 
@@ -396,7 +406,7 @@ const App = () => {
       )}
 
       {showAppSettings && (
-        <AppSettings onClose={() => setShowAppSettings(false)} />
+        <AppSettings onClose={() => { setShowAppSettings(false); loadDisplayPreferences(); }} />
       )}
 
       {overlapWarning && (

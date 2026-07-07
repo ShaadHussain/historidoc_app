@@ -12,8 +12,8 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("rename-last-version", filePath, newMessage),
   getVersions: (filePath: string) =>
     ipcRenderer.invoke("get-versions", filePath),
-  restoreVersion: (filePath: string, commitHash: string) =>
-    ipcRenderer.invoke("restore-version", filePath, commitHash),
+  restoreVersion: (filePath: string, commitHash: string, mode: 'reset' | 'commit', commitMessage?: string) =>
+    ipcRenderer.invoke("restore-version", filePath, commitHash, mode, commitMessage),
   removeTrackedFile: (filePath: string) =>
     ipcRenderer.invoke("remove-tracked-file", filePath),
   deleteFileHistory: (filePath: string) =>
