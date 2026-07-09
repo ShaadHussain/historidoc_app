@@ -29,6 +29,7 @@ const App = () => {
   const [showTutorialGuide, setShowTutorialGuide] = useState(false);
   const [use24Hour, setUse24Hour] = useState(false);
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
+  const [expandPathsByDefault, setExpandPathsByDefault] = useState(false);
   const [overlapWarning, setOverlapWarning] = useState<{ newPath: string; overlappingPaths: string[] } | null>(null);
   const [folderWarningPath, setFolderWarningPath] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(350);
@@ -41,6 +42,7 @@ const App = () => {
   const loadDisplayPreferences = () => {
     window.electron.getPreference("use24HourTime").then((val) => setUse24Hour(!!val));
     window.electron.getPreference("timezoneDisplay").then((val: string | null) => setTimezoneDisplay(val || 'system'));
+    window.electron.getPreference("expandPathsByDefault").then((val) => setExpandPathsByDefault(!!val));
   };
 
   useEffect(() => {
@@ -364,6 +366,7 @@ const App = () => {
             missingFiles={missingFiles}
             onRelink={(filePath) => setRelinkTargetPath(filePath)}
             deprecatedFiles={deprecatedFiles}
+            expandPathsByDefault={expandPathsByDefault}
           />
         </div>
         <div className="resize-divider" onMouseDown={handleDividerMouseDown} />

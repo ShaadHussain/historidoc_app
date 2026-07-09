@@ -9,10 +9,11 @@ interface FileListProps {
   missingFiles?: Set<string>;
   onRelink?: (filePath: string) => void;
   deprecatedFiles?: string[];
+  expandPathsByDefault?: boolean;
 }
 
-const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new Set(), onRelink, deprecatedFiles = [] }: FileListProps) => {
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new Set(), onRelink, deprecatedFiles = [], expandPathsByDefault = false }: FileListProps) => {
+  const [pathOverrides, setPathOverrides] = useState<Record<string, boolean>>({});
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -63,17 +64,9 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new
     return parts.join('/');
   };
 
-  const togglePathExpansion = (filePath: string, event: React.MouseEvent) => {
+  const togglePathExpansion = (filePath: string, event: React.MouseEvent, currentlyExpanded: boolean) => {
     event.stopPropagation();
-    setExpandedPaths(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(filePath)) {
-        newSet.delete(filePath);
-      } else {
-        newSet.add(filePath);
-      }
-      return newSet;
-    });
+    setPathOverrides(prev => ({ ...prev, [filePath]: !currentlyExpanded }));
   };
 
   const copyPathToClipboard = async (filePath: string, event: React.MouseEvent) => {
@@ -103,7 +96,7 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new
           </div>
         ) : (
           trackedFiles.map((filePath) => {
-            const isExpanded = expandedPaths.has(filePath);
+            const isExpanded = pathOverrides[filePath] ?? expandPathsByDefault;
             const isMissing = missingFiles.has(filePath);
             const isDeprecated = deprecatedFiles.includes(filePath);
             return (
@@ -138,13 +131,13 @@ const FileList = ({ trackedFiles, selectedFile, onSelectFile, missingFiles = new
                       </button>
                       <div
                         className={`file-path ${isExpanded ? 'expanded' : ''}`}
-                        onDoubleClick={(e) => { if (!isExpanded) togglePathExpansion(filePath, e); }}
+                        onDoubleClick={(e) => { if (!isExpanded) togglePathExpansion(filePath, e, isExpanded); }}
                       >
                         {filePath}
                       </div>
                       <button
                         className="toggle-path-btn"
-                        onClick={(e) => togglePathExpansion(filePath, e)}
+                        onClick={(e) => togglePathExpansion(filePath, e, isExpanded)}
                         title={isExpanded ? 'Minimize path' : 'Expand path'}
                       >
                         {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}

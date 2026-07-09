@@ -32,6 +32,7 @@ const AppSettings = ({ onClose, onOpenGuide, onOpenSlides }: AppSettingsProps) =
   const [timezoneDisplay, setTimezoneDisplay] = useState<string>('system');
   const [use24Hour, setUse24Hour] = useState(false);
   const [restoreMode, setRestoreMode] = useState<'reset' | 'commit' | 'ask'>('ask');
+  const [expandPathsByDefault, setExpandPathsByDefault] = useState(false);
 
   useEffect(() => {
     window.electron.getPreference("alwaysDeleteOnStartFresh").then((val) => {
@@ -48,6 +49,9 @@ const AppSettings = ({ onClose, onOpenGuide, onOpenSlides }: AppSettingsProps) =
     });
     window.electron.getPreference("restoreMode").then((val: string | null) => {
       setRestoreMode((val as 'reset' | 'commit') || 'ask');
+    });
+    window.electron.getPreference("expandPathsByDefault").then((val) => {
+      setExpandPathsByDefault(!!val);
     });
   }, []);
 
@@ -82,6 +86,11 @@ const AppSettings = ({ onClose, onOpenGuide, onOpenSlides }: AppSettingsProps) =
     const parsed = value === 'null' ? null : parseInt(value, 10);
     setAutoSaveInterval(parsed);
     await window.electron.setPreference("autoSaveInterval", parsed);
+  };
+
+  const handleExpandPathsToggle = async (checked: boolean) => {
+    setExpandPathsByDefault(checked);
+    await window.electron.setPreference("expandPathsByDefault", checked);
   };
 
   return (
@@ -162,6 +171,25 @@ const AppSettings = ({ onClose, onOpenGuide, onOpenSlides }: AppSettingsProps) =
                   type="checkbox"
                   checked={use24Hour}
                   onChange={(e) => handleUse24HourToggle(e.target.checked)}
+                />
+                <span className="settings-toggle-slider" />
+              </label>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <div className="settings-section-title">Tracked Files</div>
+
+            <div className="settings-row">
+              <div className="settings-row-text">
+                <div className="settings-row-label">Expand file paths by default</div>
+                <div className="settings-row-desc">Show the full path under each tracked file instead of collapsed. You can still expand or collapse individual files.</div>
+              </div>
+              <label className="settings-toggle">
+                <input
+                  type="checkbox"
+                  checked={expandPathsByDefault}
+                  onChange={(e) => handleExpandPathsToggle(e.target.checked)}
                 />
                 <span className="settings-toggle-slider" />
               </label>

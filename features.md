@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_123
+Setting to expand tracked file paths by default
+- New "Expand file paths by default" toggle in App Settings → Tracked Files
+- When enabled, the sidebar shows each tracked file's full path expanded instead of collapsed
+- Individual files can still be expanded/collapsed manually; that per-file choice overrides the default
+
 ## FEAT_122
 Add Rename to version card menu, move Export into an overflow menu
 - Version card actions reorganized: Diff and Restore stay as primary buttons, Export and Rename moved into a "⋯" overflow menu to reduce clutter
