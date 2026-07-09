@@ -27,11 +27,12 @@ Very important - keep the code as simple, organized, and clean as possible. This
 ## When Making Changes
 
 1. Implement the feature
-2. Test it thoroughly
-3. **COMMIT IMMEDIATELY**
-4. Move to the next feature
+2. **COMMIT IMMEDIATELY**
+3. Move to the next feature
 
 Do not wait to batch commits. Commit early, commit often.
+
+Do not run or launch the app to test changes (no `npm start`, `electron-forge start`, Playwright/Electron driving, etc.). I test the app myself. Verify with lint/typecheck only.
 
 Git push often, you can even do it after each change.
 
