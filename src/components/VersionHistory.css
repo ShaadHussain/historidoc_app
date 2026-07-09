@@ -768,6 +768,13 @@
   color: #64748b;
 }
 
+.rename-error {
+  color: #f87171;
+  font-size: 0.85rem;
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+}
+
 .dialog-actions {
   display: flex;
   gap: 1rem;

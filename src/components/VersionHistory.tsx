@@ -47,6 +47,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameMessage, setRenameMessage] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [commitError, setCommitError] = useState<string | null>(null);
   const [diffVersion, setDiffVersion] = useState<Version | null>(null);
@@ -159,6 +160,7 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
       // No changes detected, show rename dialog
       setLoading(false);
       setRenameMessage(commitMessage);
+      setRenameError(null);
       setShowRenameDialog(true);
       return;
     }
@@ -176,8 +178,13 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const handleRenameConfirm = async () => {
     if (!window.electron || !selectedFile) return;
 
+    if (!renameMessage.trim()) {
+      setRenameError('Please enter a name for the version.');
+      return;
+    }
+
     setLoading(true);
-    const result = await window.electron.renameLastVersion(selectedFile, renameMessage || commitMessage);
+    const result = await window.electron.renameLastVersion(selectedFile, renameMessage);
 
     if (result.success) {
       setCommitMessage('');
@@ -186,12 +193,14 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
     }
 
     setShowRenameDialog(false);
+    setRenameError(null);
     setLoading(false);
   };
 
   const handleRenameCancel = () => {
     setShowRenameDialog(false);
     setRenameMessage('');
+    setRenameError(null);
   };
 
   const handleRestore = async (version: Version) => {
@@ -603,11 +612,15 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
             <p className="info-text">Would you like to rename the last version instead?</p>
             <input
               type="text"
-              placeholder="Enter new version name (optional)"
+              placeholder="Enter new version name"
               value={renameMessage}
-              onChange={(e) => setRenameMessage(e.target.value)}
+              onChange={(e) => {
+                setRenameMessage(e.target.value);
+                if (renameError) setRenameError(null);
+              }}
               className="rename-input"
             />
+            {renameError && <p className="rename-error">{renameError}</p>}
             <div className="dialog-actions">
               <button className="cancel-btn" onClick={handleRenameCancel}>Cancel</button>
               <button className="confirm-rename-btn" onClick={handleRenameConfirm}>

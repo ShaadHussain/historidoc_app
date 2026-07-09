@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_120
+Require a name before renaming last version
+- Rename Last Version dialog no longer falls back to the stale commit message when the input is empty
+- Shows an inline error ("Please enter a name for the version.") and blocks the save until a name is entered
+- Error clears as soon as the user starts typing again
+
 ## FEAT_119
 Tutorial modal and getting started guide
 - First-launch sliding modal (3 slides): welcome/analogy, Save/Restore/Export, Auto-save/Folders
