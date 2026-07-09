@@ -1,5 +1,11 @@
 # Features
 
+## FEAT_122
+Add Rename to version card menu, move Export into an overflow menu
+- Version card actions reorganized: Diff and Restore stay as primary buttons, Export and Rename moved into a "⋯" overflow menu to reduce clutter
+- Rename only appears for the most recent version, since renaming relies on `git commit --amend` which only affects HEAD
+- New "Rename Version" dialog (reuses existing rename dialog styling) lets you rename any latest version directly from its menu, not just when a save detects no changes
+
 ## FEAT_121
 Consolidate export history buttons into one button + format dropdown
 - Replaced separate Text/Markdown/CSV buttons with a single "Export History" button

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
+import { Copy, Check, Settings, ArrowLeft, Link2, ChevronDown, ChevronUp, FolderOpen, MoreVertical, Download, Pencil } from 'lucide-react';
 import { Version } from '../types';
 import DiffViewer from './DiffViewer';
 import RestoreDialog from './RestoreDialog';
@@ -58,6 +58,10 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
   const [fileAutoSaveInterval, setFileAutoSaveInterval] = useState<number | null>(null);
   const [exportingHistory, setExportingHistory] = useState(false);
   const [exportFormat, setExportFormat] = useState<"text" | "markdown" | "csv">("text");
+  const [openMenuHash, setOpenMenuHash] = useState<string | null>(null);
+  const [renamingVersion, setRenamingVersion] = useState<Version | null>(null);
+  const [renameVersionMessage, setRenameVersionMessage] = useState('');
+  const [renameVersionError, setRenameVersionError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -106,6 +110,17 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
       loadVersions();
     }
   }, [selectedFile]);
+
+  useEffect(() => {
+    if (!openMenuHash) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.version-menu-wrapper')) {
+        setOpenMenuHash(null);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [openMenuHash]);
 
   useEffect(() => {
     if (showSettings && selectedFile) {
@@ -202,6 +217,42 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
     setShowRenameDialog(false);
     setRenameMessage('');
     setRenameError(null);
+  };
+
+  const handleRenameVersionClick = (version: Version) => {
+    setRenamingVersion(version);
+    setRenameVersionMessage(version.message);
+    setRenameVersionError(null);
+    setOpenMenuHash(null);
+  };
+
+  const handleRenameVersionConfirm = async () => {
+    if (!window.electron || !selectedFile || !renamingVersion) return;
+
+    if (!renameVersionMessage.trim()) {
+      setRenameVersionError('Please enter a name for the version.');
+      return;
+    }
+
+    setLoading(true);
+    const result = await window.electron.renameLastVersion(selectedFile, renameVersionMessage);
+
+    if (result.success) {
+      await loadVersions();
+      setRenamingVersion(null);
+      setRenameVersionMessage('');
+      setRenameVersionError(null);
+    } else {
+      setRenameVersionError(result.error || 'Failed to rename version.');
+    }
+
+    setLoading(false);
+  };
+
+  const handleRenameVersionCancel = () => {
+    setRenamingVersion(null);
+    setRenameVersionMessage('');
+    setRenameVersionError(null);
   };
 
   const handleRestore = async (version: Version) => {
@@ -534,6 +585,8 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
                 );
               }
 
+              const isLatest = version.hash === versions[0]?.hash;
+
               return (
                 <div key={version.hash} className="version-card">
                   <div className="version-header">
@@ -548,20 +601,42 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
                         Diff
                       </button>
                       <button
-                        className="export-btn"
-                        onClick={() => handleExport(version.hash, version.message)}
-                        disabled={loading}
-                        title="Export to separate file"
-                      >
-                        Export
-                      </button>
-                      <button
                         className="restore-btn"
                         onClick={() => handleRestore(version)}
                         disabled={loading}
                       >
                         Restore
                       </button>
+                      <div className="version-menu-wrapper">
+                        <button
+                          className="version-menu-btn"
+                          onClick={() => setOpenMenuHash(openMenuHash === version.hash ? null : version.hash)}
+                          disabled={loading}
+                          title="More actions"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                        {openMenuHash === version.hash && (
+                          <div className="version-menu-dropdown">
+                            <button
+                              className="version-menu-item"
+                              onClick={() => { setOpenMenuHash(null); handleExport(version.hash, version.message); }}
+                            >
+                              <Download size={14} />
+                              Export
+                            </button>
+                            {isLatest && (
+                              <button
+                                className="version-menu-item"
+                                onClick={() => handleRenameVersionClick(version)}
+                              >
+                                <Pencil size={14} />
+                                Rename
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="version-meta">
@@ -623,6 +698,32 @@ const VersionHistory = ({ selectedFile, onUntrackFile, onDeleteFile, isArchived 
               <button className="cancel-btn" onClick={handleRenameCancel}>Cancel</button>
               <button className="confirm-rename-btn" onClick={handleRenameConfirm}>
                 Rename Last Version
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {renamingVersion && (
+        <div className="rename-dialog-overlay">
+          <div className="rename-dialog">
+            <h3>Rename Version</h3>
+            <input
+              type="text"
+              placeholder="Enter new version name"
+              value={renameVersionMessage}
+              onChange={(e) => {
+                setRenameVersionMessage(e.target.value);
+                if (renameVersionError) setRenameVersionError(null);
+              }}
+              className="rename-input"
+              autoFocus
+            />
+            {renameVersionError && <p className="rename-error">{renameVersionError}</p>}
+            <div className="dialog-actions">
+              <button className="cancel-btn" onClick={handleRenameVersionCancel}>Cancel</button>
+              <button className="confirm-rename-btn" onClick={handleRenameVersionConfirm} disabled={loading}>
+                Rename
               </button>
             </div>
           </div>
