@@ -183,7 +183,7 @@ Simple HTML shell. Can be written anytime, but needed before renderer.
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Version Tracker</title>
+    <title>Historidoc</title>
   </head>
   <body>
     <div id="root"></div>
