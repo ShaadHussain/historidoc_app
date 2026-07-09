@@ -1,5 +1,10 @@
 # Features
 
+## FEAT_121
+Consolidate export history buttons into one button + format dropdown
+- Replaced separate Text/Markdown/CSV buttons with a single "Export History" button
+- Labeled "Export Format" dropdown selects the format used when exporting
+
 ## FEAT_120
 Require a name before renaming last version
 - Rename Last Version dialog no longer falls back to the stale commit message when the input is empty

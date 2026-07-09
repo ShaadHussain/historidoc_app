@@ -102,32 +102,62 @@
   border-color: rgba(59, 130, 246, 0.5);
 }
 
-.export-history-buttons {
+.export-history-controls {
   display: flex;
-  gap: 0.4rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
   flex-shrink: 0;
+  min-width: 180px;
 }
 
 .export-history-btn {
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  border: 1px solid rgba(37, 99, 235, 0.6);
   border-radius: 6px;
-  color: #cbd5e1;
+  color: #f8fafc;
   font-size: 0.82rem;
-  padding: 0.35rem 0.65rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: filter 0.15s, box-shadow 0.15s, transform 0.05s;
   white-space: nowrap;
 }
 
 .export-history-btn:hover:not(:disabled) {
-  border-color: rgba(59, 130, 246, 0.5);
-  color: #e2e8f0;
+  filter: brightness(1.08);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.export-history-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.96);
 }
 
 .export-history-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  filter: none;
+  box-shadow: none;
+}
+
+.export-history-format {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.export-history-format-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.export-history-format-select {
+  width: 100%;
 }
 
 .settings-view {
